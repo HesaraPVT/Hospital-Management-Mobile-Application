@@ -14,6 +14,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { AuthContext } from '../../context/AuthContext';
+import { validateEmail } from '../../utils/validators';
 
 const { width, height } = Dimensions.get('window');
 
@@ -173,10 +174,18 @@ const LoginScreen = ({ navigation }) => {
   }, []);
 
   const handleLogin = async () => {
-    if (!email || !password) {
+    const trimmedEmail = email.trim();
+
+    if (!trimmedEmail || !password) {
       Alert.alert('Missing Fields', 'Please enter your email and password.');
       return;
     }
+
+    if (!validateEmail(trimmedEmail)) {
+      Alert.alert('Invalid Email', 'Please enter a valid email address.');
+      return;
+    }
+
     // Button press animation
     Animated.sequence([
       Animated.timing(btnScale, { toValue: 0.97, duration: 80, useNativeDriver: true }),
@@ -185,7 +194,7 @@ const LoginScreen = ({ navigation }) => {
 
     setLoading(true);
     try {
-      await login(email, password);
+      await login(trimmedEmail, password);
     } catch (error) {
       Alert.alert(
         'Sign In Failed',

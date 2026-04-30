@@ -9,6 +9,6 @@ router.use(authMiddleware);
 router.get('/', roleMiddleware('admin'), getUsers);
 router.get('/:id', getUserById);
 router.put('/:id', updateUser);
-router.delete('/:id', roleMiddleware('admin'), deleteUser);
+router.delete('/:id', deleteUser);
 
 module.exports = router;

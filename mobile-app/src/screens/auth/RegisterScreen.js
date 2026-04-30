@@ -4,6 +4,7 @@ import {
   KeyboardAvoidingView, Platform, ScrollView, Animated, StatusBar,
 } from 'react-native';
 import { AuthContext } from '../../context/AuthContext';
+import { validateEmail } from '../../utils/validators';
 import CustomInput from '../../components/CustomInput';
 import CustomButton from '../../components/CustomButton';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -13,6 +14,9 @@ const RegisterScreen = ({ navigation }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState('');
+  const [birthday, setBirthday] = useState('');
+  const [age, setAge] = useState('');
   const [loading, setLoading] = useState(false);
   const { register } = useContext(AuthContext);
 
@@ -26,21 +30,75 @@ const RegisterScreen = ({ navigation }) => {
     ]).start();
   }, []);
 
+  const calculateAge = (dob) => {
+    const date = new Date(dob);
+    if (Number.isNaN(date.getTime())) return '';
+
+    const today = new Date();
+    let years = today.getFullYear() - date.getFullYear();
+    const monthDiff = today.getMonth() - date.getMonth();
+
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < date.getDate())) {
+      years -= 1;
+    }
+
+    return years;
+  };
+
+  const passwordLengthOk = (password) => typeof password === 'string' && password.length >= 6;
+  const phoneIsValid = (value) => /^\d{10}$/.test(value);
+
+  const handleBirthdayChange = (value) => {
+    setBirthday(value);
+    const calculated = calculateAge(value);
+    setAge(calculated || '');
+  };
+
   const handleRegister = async () => {
-    if (!name || !email || !password) {
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+    const trimmedPhone = phone.trim();
+
+    if (!trimmedName || !trimmedEmail || !password) {
       Alert.alert('Missing Fields', 'Please fill in all fields to continue.');
       return;
     }
+
+    if (!validateEmail(trimmedEmail)) {
+      Alert.alert('Invalid Email', 'Please enter a valid email address.');
+      return;
+    }
+
+    if (trimmedPhone && !phoneIsValid(trimmedPhone)) {
+      Alert.alert('Invalid Phone Number', 'Phone number must be exactly 10 digits and contain only numbers.');
+      return;
+    }
+
+    if (!passwordLengthOk(password)) {
+      Alert.alert(
+        'Weak Password',
+        'Password must be at least 6 characters long.'
+      );
+      return;
+    }
+
+    if (birthday) {
+      const birthDate = new Date(birthday);
+      if (Number.isNaN(birthDate.getTime())) {
+        Alert.alert('Invalid Birthday', 'Please enter birthday in YYYY-MM-DD format.');
+        return;
+      }
+    }
+
     setLoading(true);
     try {
-      await register(name, email, password);
+      await register(trimmedName, trimmedEmail, password, trimmedPhone, birthday);
     } catch (error) {
       Alert.alert('Registration Failed', error.response?.data?.message || 'Please try again.');
     } finally {
       setLoading(false);
     }
   };
-
   if (loading) return <LoadingSpinner message="Creating your account..." />;
 
   return (
@@ -67,7 +125,11 @@ const RegisterScreen = ({ navigation }) => {
 
           <CustomInput label="Full Name" value={name} onChangeText={setName} placeholder="Dr. / Mr. / Ms. Full Name" />
           <CustomInput label="Email Address" value={email} onChangeText={setEmail} placeholder="you@example.com" keyboardType="email-address" />
+          <CustomInput label="Contact Number" value={phone} onChangeText={setPhone} placeholder="0712345678" keyboardType="phone-pad" />
+          <CustomInput label="Birthday" value={birthday} onChangeText={handleBirthdayChange} placeholder="YYYY-MM-DD" />
+          {age ? <Text style={styles.ageText}>Age: {age}</Text> : null}
           <CustomInput label="Password" value={password} onChangeText={setPassword} placeholder="Create a strong password" secureTextEntry />
+          <Text style={styles.passwordHint}>Use at least 6 characters for a strong password.</Text>
 
           <CustomButton title="Create Account" onPress={handleRegister} style={styles.btn} />
 
@@ -133,9 +195,11 @@ const styles = StyleSheet.create({
   loginText: { fontSize: 13, color: COLORS.textMuted },
   loginLink: { fontSize: 13, fontWeight: FONTS.bold, color: COLORS.link },
 
+  passwordHint: { fontSize: 12, color: COLORS.textSecondary, marginTop: 4, marginBottom: 12, marginLeft: 2 },
   securityRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6 },
   shieldSmall: { width: 11, height: 12, borderWidth: 1.5, borderColor: COLORS.security, borderRadius: 2, borderBottomLeftRadius: 5, borderBottomRightRadius: 5 },
   securityText: { fontSize: 10, color: COLORS.textMuted, letterSpacing: 0.3 },
+  ageText: { fontSize: 13, color: COLORS.textSecondary, marginBottom: 8, marginLeft: 2 },
 });
 
 export default RegisterScreen;

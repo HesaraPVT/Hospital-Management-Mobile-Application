@@ -4,6 +4,14 @@ import axios from '../api/axios';
 
 export const AuthContext = createContext();
 
+const setAuthToken = (token) => {
+  if (token) {
+    axios.defaults.headers.common.Authorization = `Bearer ${token}`;
+  } else {
+    delete axios.defaults.headers.common.Authorization;
+  }
+};
+
 export const AuthProvider = ({ children }) => {
   const [userToken, setUserToken] = useState(null);
   const [userInfo, setUserInfo] = useState(null);
@@ -13,6 +21,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await axios.post('/auth/login', { email, password });
       const { token, ...user } = response.data;
+      setAuthToken(token);
       setUserToken(token);
       setUserInfo(user);
       await AsyncStorage.setItem('userToken', token);
@@ -22,20 +31,31 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (name, email, password) => {
+  const register = async (name, email, password, phone, birthday) => {
     try {
-      const response = await axios.post('/auth/register', { name, email, password });
+      const response = await axios.post('/auth/register', { name, email, password, phone, birthday });
       const { token, ...user } = response.data;
+      setAuthToken(token);
       setUserToken(token);
       setUserInfo(user);
       await AsyncStorage.setItem('userToken', token);
       await AsyncStorage.setItem('userInfo', JSON.stringify(user));
     } catch (error) {
       throw error;
+    }
+  };
+
+  const updateUserInfo = async (updatedUser) => {
+    try {
+      setUserInfo(updatedUser);
+      await AsyncStorage.setItem('userInfo', JSON.stringify(updatedUser));
+    } catch (error) {
+      console.log('Failed to persist updated user info:', error);
     }
   };
 
   const logout = async () => {
+    setAuthToken(null);
     setUserToken(null);
     setUserInfo(null);
     await AsyncStorage.removeItem('userToken');
@@ -45,10 +65,26 @@ export const AuthProvider = ({ children }) => {
   const isLoggedIn = async () => {
     try {
       const token = await AsyncStorage.getItem('userToken');
-      const user = await AsyncStorage.getItem('userInfo');
-      if (token && user) {
+      const storedUser = await AsyncStorage.getItem('userInfo');
+
+      if (token) {
+        setAuthToken(token);
         setUserToken(token);
-        setUserInfo(JSON.parse(user));
+        if (storedUser) setUserInfo(JSON.parse(storedUser));
+
+        try {
+          const response = await axios.get('/auth/me');
+          setUserInfo(response.data);
+          await AsyncStorage.setItem('userInfo', JSON.stringify(response.data));
+        } catch (error) {
+          if (error.response?.status === 401) {
+            setAuthToken(null);
+            setUserToken(null);
+            setUserInfo(null);
+            await AsyncStorage.removeItem('userToken');
+            await AsyncStorage.removeItem('userInfo');
+          }
+        }
       }
     } catch (error) {
       console.log(error);
@@ -66,6 +102,7 @@ export const AuthProvider = ({ children }) => {
       login,
       register,
       logout,
+      updateUserInfo,
       userToken,
       userInfo,
       isLoading,

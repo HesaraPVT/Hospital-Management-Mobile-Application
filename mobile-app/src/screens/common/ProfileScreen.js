@@ -4,32 +4,150 @@ import {
   TouchableOpacity, Platform, StatusBar,
 } from 'react-native';
 import { AuthContext } from '../../context/AuthContext';
-import { updateUserApi } from '../../api/userApi';
+import { updateUserApi, deleteUserApi } from '../../api/userApi';
+import { validateEmail } from '../../utils/validators';
 import CustomInput from '../../components/CustomInput';
 import CustomButton from '../../components/CustomButton';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { COLORS, FONTS, RADIUS, SHADOW } from '../../theme';
 
 const ProfileScreen = () => {
-  const { userInfo, logout } = useContext(AuthContext);
+  const { userInfo, logout, updateUserInfo } = useContext(AuthContext);
   const [name,    setName]    = useState(userInfo?.name    || '');
   const [email,   setEmail]   = useState(userInfo?.email   || '');
   const [phone,   setPhone]   = useState(userInfo?.phone   || '');
+  const [birthday, setBirthday] = useState(userInfo?.birthday ? userInfo.birthday.split('T')[0] : '');
+  const [age, setAge] = useState(userInfo?.birthday ? (() => {
+    const birthDate = new Date(userInfo.birthday);
+    const today = new Date();
+    let years = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      years -= 1;
+    }
+    return years;
+  })() : '');
   const [address, setAddress] = useState(userInfo?.address || '');
   const [loading, setLoading] = useState(false);
 
   const initials = name ? name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '?';
 
+  const calculateAge = (dob) => {
+    const date = new Date(dob);
+    if (Number.isNaN(date.getTime())) return '';
+
+    const today = new Date();
+    let years = today.getFullYear() - date.getFullYear();
+    const monthDiff = today.getMonth() - date.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < date.getDate())) {
+      years -= 1;
+    }
+    return years;
+  };
+
+  React.useEffect(() => {
+    if (!userInfo) return;
+
+    setName(userInfo.name || '');
+    setEmail(userInfo.email || '');
+    setPhone(userInfo.phone || '');
+    setBirthday(userInfo.birthday ? userInfo.birthday.split('T')[0] : '');
+    setAge(userInfo.birthday ? calculateAge(userInfo.birthday) : '');
+    setAddress(userInfo.address || '');
+  }, [userInfo]);
+
+  const phoneIsValid = (value) => /^\d{10}$/.test(value);
+
+  const handleBirthdayChange = (value) => {
+    setBirthday(value);
+    const calculated = calculateAge(value);
+    setAge(calculated ? calculated : '');
+  };
+
   const handleUpdate = async () => {
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+    const trimmedPhone = phone.trim();
+    const trimmedAddress = address.trim();
+
+    if (!trimmedName || !trimmedEmail) {
+      Alert.alert('Missing Fields', 'Name and email cannot be empty.');
+      return;
+    }
+
+    if (!validateEmail(trimmedEmail)) {
+      Alert.alert('Invalid Email', 'Please enter a valid email address.');
+      return;
+    }
+
+    if (trimmedPhone && !phoneIsValid(trimmedPhone)) {
+      Alert.alert('Invalid Phone Number', 'Phone number must be exactly 10 digits and contain only numbers.');
+      return;
+    }
+
+    if (birthday) {
+      const birthDate = new Date(birthday);
+      if (Number.isNaN(birthDate.getTime())) {
+        Alert.alert('Invalid Birthday', 'Please enter birthday in YYYY-MM-DD format.');
+        return;
+      }
+    }
+
     setLoading(true);
     try {
-      await updateUserApi(userInfo._id, { name, email, phone, address });
+      const response = await updateUserApi(userInfo._id, {
+        name: trimmedName,
+        email: trimmedEmail,
+        phone: trimmedPhone,
+        birthday,
+        address: trimmedAddress,
+      });
+      updateUserInfo(response.data);
+      if (response.data.birthday) {
+        setAge(response.data.age || calculateAge(response.data.birthday));
+      }
       Alert.alert('Profile Updated', 'Your information has been saved successfully.');
     } catch (error) {
       Alert.alert('Update Failed', error.response?.data?.message || 'Please try again.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const confirmDeleteAccount = async () => {
+    Alert.alert(
+      'Confirm Deletion',
+      'Are you absolutely sure you want to delete your account? This action cannot be undone.',
+      [
+        { text: 'No', style: 'cancel' },
+        {
+          text: 'Yes, delete',
+          style: 'destructive',
+          onPress: async () => {
+            setLoading(true);
+            try {
+              await deleteUserApi(userInfo._id);
+              await logout();
+            } catch (error) {
+              Alert.alert('Delete Failed', error.response?.data?.message || 'Unable to delete account.');
+            } finally {
+              setLoading(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'This action is permanent. Do you want to continue?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete', style: 'destructive', onPress: confirmDeleteAccount },
+      ]
+    );
   };
 
   if (loading) return <LoadingSpinner message="Saving profile..." />;
@@ -62,6 +180,8 @@ const ProfileScreen = () => {
           <CustomInput label="Full Name"     value={name}    onChangeText={setName}    placeholder="Your name"    />
           <CustomInput label="Email Address" value={email}   onChangeText={setEmail}   placeholder="Your email"   keyboardType="email-address" />
           <CustomInput label="Phone Number"  value={phone}   onChangeText={setPhone}   placeholder="Your phone"   keyboardType="phone-pad" />
+          <CustomInput label="Birthday"      value={birthday} onChangeText={handleBirthdayChange} placeholder="YYYY-MM-DD" />
+          {age ? <Text style={styles.profileAge}>Age: {age}</Text> : null}
           <CustomInput label="Address"       value={address} onChangeText={setAddress} placeholder="Your address" />
         </View>
 
@@ -69,6 +189,10 @@ const ProfileScreen = () => {
 
         <TouchableOpacity style={styles.logoutBtn} onPress={logout} activeOpacity={0.8}>
           <Text style={styles.logoutText}>Sign Out</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.deleteBtn} onPress={handleDeleteAccount} activeOpacity={0.8}>
+          <Text style={styles.deleteText}>Delete Account</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -121,6 +245,12 @@ const styles = StyleSheet.create({
     borderWidth: 1.5, borderColor: COLORS.danger, alignItems: 'center', marginTop: 6,
   },
   logoutText: { fontSize: 14, fontWeight: FONTS.semibold, color: COLORS.danger },
+  deleteBtn: {
+    paddingVertical: 14, borderRadius: RADIUS.md,
+    backgroundColor: COLORS.danger, alignItems: 'center', marginTop: 12,
+  },
+  deleteText: { fontSize: 14, fontWeight: FONTS.semibold, color: COLORS.white },
+  profileAge: { fontSize: 13, color: COLORS.white, marginBottom: 8, marginTop: 4 },
 });
 
 export default ProfileScreen;
