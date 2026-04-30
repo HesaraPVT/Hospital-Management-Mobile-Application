@@ -21,7 +21,7 @@ describe('complaint.controller updateComplaintStatus', () => {
     Complaint.findById.mockResolvedValue({
       _id: 'c1',
       userId: 'u1',
-      status: 'open',
+      status: 'submitted',
       save: jest.fn(),
     });
 
@@ -43,7 +43,7 @@ describe('complaint.controller updateComplaintStatus', () => {
     Complaint.findById.mockResolvedValue({
       _id: 'c1',
       userId: 'u1',
-      status: 'open',
+      status: 'submitted',
       save: jest.fn(),
     });
 
