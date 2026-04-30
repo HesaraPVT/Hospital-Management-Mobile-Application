@@ -17,6 +17,8 @@ const DoctorFormScreen = ({ route, navigation }) => {
   const [experience, setExperience] = useState(doctor?.experience?.toString() || '');
   const [description, setDescription] = useState(doctor?.description || '');
   const [consultationFee, setConsultationFee] = useState(doctor?.consultationFee?.toString() || '');
+  const [availabilityStartTime, setAvailabilityStartTime] = useState(doctor?.availabilityStartTime || '09:00');
+  const [availabilityEndTime, setAvailabilityEndTime] = useState(doctor?.availabilityEndTime || '17:00');
   const [availabilityStatus, setAvailabilityStatus] = useState(
     doctor?.availabilityStatus !== undefined ? Boolean(doctor.availabilityStatus) : true
   );
@@ -27,9 +29,30 @@ const DoctorFormScreen = ({ route, navigation }) => {
     const exp = parseInt(experience);
     if (Number.isNaN(exp) || exp < 0) { Alert.alert('Error', 'Experience must be a valid number'); return; }
 
+    // Validate time format (HH:MM)
+    const timeRegex = /^\d{2}:\d{2}$/;
+    if (!timeRegex.test(availabilityStartTime)) { Alert.alert('Error', 'Start time must be HH:MM format'); return; }
+    if (!timeRegex.test(availabilityEndTime)) { Alert.alert('Error', 'End time must be HH:MM format'); return; }
+
+    // Parse times to validate
+    const [startHour, startMin] = availabilityStartTime.split(':').map(Number);
+    const [endHour, endMin] = availabilityEndTime.split(':').map(Number);
+    if (startHour < 0 || startHour > 23 || startMin < 0 || startMin > 59) { Alert.alert('Error', 'Invalid start time'); return; }
+    if (endHour < 0 || endHour > 23 || endMin < 0 || endMin > 59) { Alert.alert('Error', 'Invalid end time'); return; }
+    if (startHour * 60 + startMin >= endHour * 60 + endMin) { Alert.alert('Error', 'End time must be after start time'); return; }
+
     setLoading(true);
     try {
-      const data = { name, specialization, experience: exp, description, consultationFee: consultationFee ? parseFloat(consultationFee) : undefined, availabilityStatus };
+      const data = { 
+        name, 
+        specialization, 
+        experience: exp, 
+        description, 
+        consultationFee: consultationFee ? parseFloat(consultationFee) : undefined, 
+        availabilityStatus,
+        availabilityStartTime,
+        availabilityEndTime,
+      };
       await (doctor ? updateDoctorApi(doctor._id, data) : createDoctorApi(data));
       navigation.goBack();
     } catch (error) {
@@ -61,6 +84,22 @@ const DoctorFormScreen = ({ route, navigation }) => {
         </View>
 
         <Text style={styles.sectionLabel}>AVAILABILITY</Text>
+        <View style={styles.formCard}>
+          <CustomInput 
+            label="Available From (HH:MM)" 
+            value={availabilityStartTime} 
+            onChangeText={setAvailabilityStartTime} 
+            placeholder="e.g. 09:00" 
+          />
+          <CustomInput 
+            label="Available Until (HH:MM)" 
+            value={availabilityEndTime} 
+            onChangeText={setAvailabilityEndTime} 
+            placeholder="e.g. 17:00" 
+          />
+        </View>
+
+        <Text style={styles.sectionLabel}>STATUS</Text>
         <View style={styles.toggleCard}>
           <View>
             <Text style={styles.toggleLabel}>Mark as Available</Text>
