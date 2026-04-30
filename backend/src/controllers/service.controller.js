@@ -1,4 +1,4 @@
-const Service = require('../models/service.model');
+/*const Service = require('../models/service.model');
 const asyncHandler = require('../utils/asyncHandler');
 
 exports.createService = asyncHandler(async (req, res) => {
@@ -59,4 +59,251 @@ exports.deleteService = asyncHandler(async (req, res) => {
 
   await service.remove();
   res.status(200).json({ message: 'Service deleted successfully' });
+});*/
+
+
+
+
+
+/*const Service = require('../models/service.model');
+const asyncHandler = require('../utils/asyncHandler');
+
+// @desc    Add a new hospital service
+// @route   POST /api/services
+exports.createService = asyncHandler(async (req, res) => {
+    const { serviceName, description, price, duration, availabilityStatus } = req.body;
+
+    // Validate mandatory fields
+    const requiredFields = ['serviceName', 'description', 'price', 'duration'];
+    for (const field of requiredFields) {
+        if (req.body[field] === undefined || req.body[field] === null) {
+            return res.status(400).json({ 
+                success: false, 
+                message: `Please provide the following field: ${field}` 
+            });
+        }
+    }
+
+    const newService = await Service.create({
+        serviceName,
+        description,
+        price,
+        duration,
+        availabilityStatus: availabilityStatus ?? true, // Using Nullish coalescing operator
+    });
+
+    res.status(201).json({ success: true, data: newService });
+});
+
+// @desc    Retrieve all services
+// @route   GET /api/services
+exports.getServices = asyncHandler(async (req, res) => {
+    const data = await Service.find().lean(); // Use .lean() for better performance if just reading
+    res.status(200).json({ success: true, count: data.length, data });
+});
+
+// @desc    Get single service details
+// @route   GET /api/services/:id
+exports.getServiceById = asyncHandler(async (req, res) => {
+    const entry = await Service.findById(req.params.id);
+    
+    if (!entry) {
+        return res.status(404).json({ success: false, message: 'Resource not found' });
+    }
+    
+    res.status(200).json({ success: true, data: entry });
+});
+
+// @desc    Modify existing service info
+// @route   PUT /api/services/:id
+exports.updateService = asyncHandler(async (req, res) => {
+    // Instead of find + save, use findByIdAndUpdate for a cleaner look
+    const updatedService = await Service.findByIdAndUpdate(
+        req.params.id, 
+        req.body, 
+        { new: true, runValidators: true }
+    );
+
+    if (!updatedService) {
+        return res.status(404).json({ success: false, message: 'Update failed: Service not found' });
+    }
+
+    res.status(200).json({ success: true, data: updatedService });
+});
+
+// @desc    Remove service from system
+// @route   DELETE /api/services/:id
+exports.deleteService = asyncHandler(async (req, res) => {
+    const result = await Service.findByIdAndDelete(req.params.id);
+
+    if (!result) {
+        return res.status(404).json({ success: false, message: 'Deletion failed: Service not found' });
+    }
+
+    res.status(200).json({ success: true, message: 'Service removed successfully' });
+});
+*/
+
+
+
+
+/*const Service = require('../models/service.model');
+const asyncHandler = require('../utils/asyncHandler');
+
+// @desc    Add a new hospital service
+// @route   POST /api/services
+exports.createService = asyncHandler(async (req, res) => {
+    const { serviceName, description, price, duration, availabilityStatus } = req.body;
+
+    // Validate mandatory fields
+    const requiredFields = ['serviceName', 'description', 'price', 'duration'];
+    for (const field of requiredFields) {
+        if (req.body[field] === undefined || req.body[field] === null) {
+            return res.status(400).json({ 
+                success: false, 
+                message: `Please provide the following field: ${field}` 
+            });
+        }
+    }
+
+    const newService = await Service.create({
+        serviceName,
+        description,
+        price,
+        duration,
+        availabilityStatus: availabilityStatus ?? true, 
+    });
+
+    res.status(201).json({ success: true, data: newService });
+});
+
+// @desc    Retrieve all services
+// @route   GET /api/services
+exports.getServices = asyncHandler(async (req, res) => {
+    const data = await Service.find().lean(); 
+    res.status(200).json({ success: true, count: data.length, data });
+});
+
+// @desc    Get single service details
+// @route   GET /api/services/:id
+exports.getServiceById = asyncHandler(async (req, res) => {
+    const entry = await Service.findById(req.params.id);
+    
+    if (!entry) {
+        return res.status(404).json({ success: false, message: 'Resource not found' });
+    }
+    
+    res.status(200).json({ success: true, data: entry });
+});
+
+// @desc    Modify existing service info
+// @route   PUT /api/services/:id
+exports.updateService = asyncHandler(async (req, res) => {
+    // FIX APPLIED HERE: Changed { new: true } to { returnDocument: 'after' }
+    const updatedService = await Service.findByIdAndUpdate(
+        req.params.id, 
+        req.body, 
+        { returnDocument: 'after', runValidators: true }
+    );
+
+    if (!updatedService) {
+        return res.status(404).json({ success: false, message: 'Update failed: Service not found' });
+    }
+
+    res.status(200).json({ success: true, data: updatedService });
+});
+
+// @desc    Remove service from system
+// @route   DELETE /api/services/:id
+exports.deleteService = asyncHandler(async (req, res) => {
+    const result = await Service.findByIdAndDelete(req.params.id);
+
+    if (!result) {
+        return res.status(404).json({ success: false, message: 'Deletion failed: Service not found' });
+    }
+
+    res.status(200).json({ success: true, message: 'Service removed successfully' });
+});*/
+
+
+
+
+
+const Service = require('../models/service.model');
+const asyncHandler = require('../utils/asyncHandler');
+
+// @desc    Add a new hospital service
+// @route   POST /api/services
+exports.createService = asyncHandler(async (req, res) => {
+    // UPDATED: Destructure 'category' from the request body
+    const { serviceName, description, price, duration, availabilityStatus, category } = req.body;
+
+    // UPDATED: Added 'category' to mandatory validation
+    const requiredFields = ['serviceName', 'description', 'price', 'duration', 'category'];
+    for (const field of requiredFields) {
+        if (req.body[field] === undefined || req.body[field] === null) {
+            return res.status(400).json({ 
+                success: false, 
+                message: `Please provide the following field: ${field}` 
+            });
+        }
+    }
+
+    const newService = await Service.create({
+        serviceName,
+        description,
+        price,
+        duration,
+        category, // UPDATED: Save the category to the database
+        availabilityStatus: availabilityStatus ?? true, 
+    });
+
+    res.status(201).json({ success: true, data: newService });
+});
+
+// @desc    Retrieve all services
+// @route   GET /api/services
+exports.getServices = asyncHandler(async (req, res) => {
+    const data = await Service.find().lean(); 
+    res.status(200).json({ success: true, count: data.length, data });
+});
+
+// @desc    Get single service details
+// @route   GET /api/services/:id
+exports.getServiceById = asyncHandler(async (req, res) => {
+    const entry = await Service.findById(req.params.id);
+    
+    if (!entry) {
+        return res.status(404).json({ success: false, message: 'Resource not found' });
+    }
+    
+    res.status(200).json({ success: true, data: entry });
+});
+
+// @desc    Modify existing service info
+// @route   PUT /api/services/:id
+exports.updateService = asyncHandler(async (req, res) => {
+    const updatedService = await Service.findByIdAndUpdate(
+        req.params.id, 
+        req.body, 
+        { returnDocument: 'after', runValidators: true }
+    );
+
+    if (!updatedService) {
+        return res.status(404).json({ success: false, message: 'Update failed: Service not found' });
+    }
+
+    res.status(200).json({ success: true, data: updatedService });
+});
+
+// @desc    Remove service from system
+// @route   DELETE /api/services/:id
+exports.deleteService = asyncHandler(async (req, res) => {
+    const result = await Service.findByIdAndDelete(req.params.id);
+
+    if (!result) {
+        return res.status(404).json({ success: false, message: 'Deletion failed: Service not found' });
+    }
+
+    res.status(200).json({ success: true, message: 'Service removed successfully' });
 });
