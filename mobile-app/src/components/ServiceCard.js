@@ -13,7 +13,7 @@ const ServiceCard = ({ service, onPress }) => (
       <Text style={styles.name}>{service.serviceName}</Text>
       <Text style={styles.desc} numberOfLines={2}>{service.description}</Text>
       <View style={styles.footRow}>
-        <Text style={styles.price}>${service.price}</Text>
+        <Text style={styles.price}>LKR{service.price}</Text>
         <View style={styles.durationBadge}>
           <Text style={styles.durationText}>{service.duration} min</Text>
         </View>
