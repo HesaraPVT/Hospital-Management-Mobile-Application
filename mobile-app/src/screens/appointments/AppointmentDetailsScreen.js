@@ -1,10 +1,12 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView,
-  Platform, StatusBar, TouchableOpacity,
+  View, Text, StyleSheet, ScrollView, Modal,
+  Platform, StatusBar, TouchableOpacity, Alert,
 } from 'react-native';
 import CustomButton from '../../components/CustomButton';
+import CustomInput from '../../components/CustomInput';
 import { AuthContext } from '../../context/AuthContext';
+import { cancelAppointmentApi } from '../../api/appointmentApi';
 import { COLORS, FONTS, RADIUS, SHADOW, statusColor } from '../../theme';
 
 const DetailRow = ({ label, value, valueStyle }) => (
@@ -19,6 +21,32 @@ const AppointmentDetailsScreen = ({ route, navigation }) => {
   const { userInfo } = useContext(AuthContext);
   const isPatient = userInfo?.role === 'patient';
   const sc = statusColor(appointment.status);
+  
+  const [cancelModalVisible, setCancelModalVisible] = useState(false);
+  const [cancellationReason, setCancellationReason] = useState('');
+  const [cancelLoading, setCancelLoading] = useState(false);
+
+  const canCancel = isPatient && (appointment.status === 'pending' || appointment.status === 'approved');
+
+  const handleCancelAppointment = async () => {
+    if (!cancellationReason.trim()) {
+      Alert.alert('Required', 'Please provide a reason for cancellation');
+      return;
+    }
+
+    setCancelLoading(true);
+    try {
+      await cancelAppointmentApi(appointment._id, cancellationReason);
+      setCancelModalVisible(false);
+      Alert.alert('Success', 'Your appointment has been cancelled. Waitlisted users will be notified.', [
+        { text: 'OK', onPress: () => navigation.goBack() }
+      ]);
+    } catch (error) {
+      Alert.alert('Error', error.response?.data?.message || 'Failed to cancel appointment');
+    } finally {
+      setCancelLoading(false);
+    }
+  };
 
   return (
     <View style={styles.root}>
@@ -114,7 +142,84 @@ const AppointmentDetailsScreen = ({ route, navigation }) => {
             />
           </View>
         ) : null}
+
+        {/* Cancel Appointment Button */}
+        {canCancel ? (
+          <TouchableOpacity
+            style={styles.cancelBtn}
+            onPress={() => setCancelModalVisible(true)}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.cancelBtnText}>Cancel Appointment</Text>
+          </TouchableOpacity>
+        ) : null}
       </ScrollView>
+
+      {/* Cancel Appointment Modal */}
+      <Modal
+        visible={cancelModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => {
+          setCancelModalVisible(false);
+          setCancellationReason('');
+        }}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Cancel Appointment</Text>
+            <Text style={styles.modalSubtitle}>
+              Are you sure you want to cancel this appointment? This action cannot be undone.
+            </Text>
+
+            <View style={styles.infoBox}>
+              <Text style={styles.infoLabel}>Appointment Details:</Text>
+              <Text style={styles.infoValue}>
+                {appointment.doctorId?.name} • {appointment.appointmentTime}
+              </Text>
+            </View>
+
+            <Text style={styles.reasonLabel}>Reason for Cancellation *</Text>
+            <CustomInput
+              placeholder="Please tell us why you are cancelling..."
+              value={cancellationReason}
+              onChangeText={setCancellationReason}
+              multiline
+              numberOfLines={4}
+              maxLength={300}
+              placeholderTextColor={COLORS.textMuted}
+            />
+            <Text style={styles.charCount}>{cancellationReason.length}/300</Text>
+
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.keepButton]}
+                onPress={() => {
+                  setCancelModalVisible(false);
+                  setCancellationReason('');
+                }}
+                disabled={cancelLoading}
+              >
+                <Text style={styles.keepButtonText}>Keep Appointment</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.modalButton,
+                  styles.confirmCancelButton,
+                  cancelLoading && { opacity: 0.6 }
+                ]}
+                onPress={handleCancelAppointment}
+                disabled={cancelLoading}
+              >
+                <Text style={styles.confirmCancelButtonText}>
+                  {cancelLoading ? 'Cancelling...' : 'Confirm Cancellation'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -174,6 +279,109 @@ const styles = StyleSheet.create({
   paymentBannerTitle: { fontSize: 15, fontWeight: FONTS.bold, color: COLORS.navyDeep },
   paymentBannerSub: { fontSize: 12, fontWeight: FONTS.regular, color: COLORS.textMuted, marginTop: 2, marginBottom: 12 },
   payBtn: { marginTop: 0, marginVertical: 0 },
+
+  // Cancel button
+  cancelBtn: {
+    marginTop: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#FFE5E5',
+    borderRadius: RADIUS.lg,
+    borderWidth: 1.5,
+    borderColor: COLORS.danger,
+    alignItems: 'center',
+  },
+  cancelBtnText: {
+    fontSize: 14,
+    fontWeight: FONTS.semibold,
+    color: COLORS.danger,
+  },
+
+  // Cancel Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: COLORS.white,
+    borderTopLeftRadius: RADIUS.xl,
+    borderTopRightRadius: RADIUS.xl,
+    padding: 24,
+    paddingBottom: 32,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: FONTS.bold,
+    color: COLORS.navyDeep,
+    marginBottom: 8,
+  },
+  modalSubtitle: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    lineHeight: 20,
+    marginBottom: 16,
+  },
+  infoBox: {
+    backgroundColor: '#F5F5F5',
+    padding: 12,
+    borderRadius: RADIUS.md,
+    marginBottom: 20,
+  },
+  infoLabel: {
+    fontSize: 11,
+    fontWeight: FONTS.bold,
+    color: COLORS.textMuted,
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  infoValue: {
+    fontSize: 13,
+    fontWeight: FONTS.semibold,
+    color: COLORS.navyDeep,
+  },
+  reasonLabel: {
+    fontSize: 13,
+    fontWeight: FONTS.bold,
+    color: COLORS.navyDeep,
+    marginBottom: 8,
+  },
+  charCount: {
+    fontSize: 11,
+    color: COLORS.textMuted,
+    textAlign: 'right',
+    marginBottom: 16,
+  },
+  modalButtonContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 20,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: RADIUS.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  keepButton: {
+    backgroundColor: COLORS.bgMuted,
+    borderWidth: 1,
+    borderColor: COLORS.textMuted,
+  },
+  keepButtonText: {
+    fontSize: 13,
+    fontWeight: FONTS.semibold,
+    color: COLORS.navyDeep,
+  },
+  confirmCancelButton: {
+    backgroundColor: COLORS.danger,
+  },
+  confirmCancelButtonText: {
+    fontSize: 13,
+    fontWeight: FONTS.semibold,
+    color: COLORS.white,
+  },
 });
 
 export default AppointmentDetailsScreen;

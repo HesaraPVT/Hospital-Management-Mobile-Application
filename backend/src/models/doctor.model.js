@@ -9,6 +9,8 @@ const doctorSchema = new mongoose.Schema(
     image: { type: String },
     description: { type: String },
     consultationFee: { type: Number },
+    availabilityStartTime: { type: String, default: '09:00' }, // Format: HH:MM (e.g., "09:00")
+    availabilityEndTime: { type: String, default: '17:00' },   // Format: HH:MM (e.g., "17:00")
   },
   { timestamps: true }
 );

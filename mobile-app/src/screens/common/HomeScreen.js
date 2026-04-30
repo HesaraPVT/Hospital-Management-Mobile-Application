@@ -4,6 +4,7 @@ import {
   ScrollView, StatusBar, Platform, Animated,
 } from 'react-native';
 import { AuthContext } from '../../context/AuthContext';
+import NotificationBell from '../../components/NotificationBell';
 import { COLORS, FONTS, RADIUS, SHADOW } from '../../theme';
 
 const NAV_CARDS = [
@@ -32,6 +33,11 @@ const HomeScreen = ({ navigation }) => {
     <View style={styles.root}>
       <StatusBar barStyle="light-content" backgroundColor={COLORS.navyDeep} />
 
+      {/* Notification Bell - placed outside hero to avoid layout issues */}
+      <View style={styles.bellIconWrapper}>
+        <NotificationBell navigation={navigation} />
+      </View>
+
       {/* Hero header */}
       <View style={styles.hero}>
         <View style={styles.heroCircle1} />
@@ -39,6 +45,7 @@ const HomeScreen = ({ navigation }) => {
         <View style={styles.crossWrap} pointerEvents="none">
           <View style={styles.crossV} /><View style={styles.crossH} />
         </View>
+
         <Text style={styles.heroEst}>OLYMPUS LANKA HOSPITAL</Text>
         <Text style={styles.heroGreet}>Good day,</Text>
         <Text style={styles.heroName}>{userInfo?.name} 👋</Text>
@@ -87,6 +94,13 @@ const HomeScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: COLORS.bgPage },
 
+  bellIconWrapper: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 50 : 32,
+    right: 12,
+    zIndex: 100,
+  },
+
   hero: {
     backgroundColor: COLORS.navyMid,
     paddingHorizontal: 24,
@@ -108,7 +122,7 @@ const styles = StyleSheet.create({
   heroSub: { fontSize: 13, color: 'rgba(255,255,255,0.6)' },
 
   scroll: { flex: 1 },
-  scrollContent: { paddingTop: 20, paddingBottom: 40 },
+  scrollContent: { paddingTop: 20, paddingBottom: 100 },
 
   statRow: {
     flexDirection: 'row',

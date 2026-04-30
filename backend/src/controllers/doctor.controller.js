@@ -2,10 +2,19 @@ const Doctor = require('../models/doctor.model');
 const asyncHandler = require('../utils/asyncHandler');
 
 exports.createDoctor = asyncHandler(async (req, res) => {
-  const { name, specialization, experience, description, consultationFee, image, availabilityStatus } = req.body;
+  const { name, specialization, experience, description, consultationFee, image, availabilityStatus, availabilityStartTime, availabilityEndTime } = req.body;
 
   if (!name || !specialization || experience === undefined) {
     return res.status(400).json({ message: 'Name, specialization, and experience are required' });
+  }
+
+  // Validate time format (HH:MM)
+  const timeRegex = /^\d{2}:\d{2}$/;
+  if (availabilityStartTime && !timeRegex.test(availabilityStartTime)) {
+    return res.status(400).json({ message: 'availabilityStartTime must be in HH:MM format' });
+  }
+  if (availabilityEndTime && !timeRegex.test(availabilityEndTime)) {
+    return res.status(400).json({ message: 'availabilityEndTime must be in HH:MM format' });
   }
 
   const doctor = await Doctor.create({
@@ -16,6 +25,8 @@ exports.createDoctor = asyncHandler(async (req, res) => {
     consultationFee,
     image,
     availabilityStatus: availabilityStatus !== undefined ? availabilityStatus : true,
+    availabilityStartTime: availabilityStartTime || '09:00',
+    availabilityEndTime: availabilityEndTime || '17:00',
   });
 
   res.status(201).json(doctor);
@@ -48,6 +59,22 @@ exports.updateDoctor = asyncHandler(async (req, res) => {
   if (req.body.consultationFee !== undefined) updates.consultationFee = req.body.consultationFee;
   if (req.body.image !== undefined) updates.image = req.body.image;
   if (req.body.availabilityStatus !== undefined) updates.availabilityStatus = req.body.availabilityStatus;
+  
+  // Handle availability time updates
+  if (req.body.availabilityStartTime !== undefined) {
+    const timeRegex = /^\d{2}:\d{2}$/;
+    if (!timeRegex.test(req.body.availabilityStartTime)) {
+      return res.status(400).json({ message: 'availabilityStartTime must be in HH:MM format' });
+    }
+    updates.availabilityStartTime = req.body.availabilityStartTime;
+  }
+  if (req.body.availabilityEndTime !== undefined) {
+    const timeRegex = /^\d{2}:\d{2}$/;
+    if (!timeRegex.test(req.body.availabilityEndTime)) {
+      return res.status(400).json({ message: 'availabilityEndTime must be in HH:MM format' });
+    }
+    updates.availabilityEndTime = req.body.availabilityEndTime;
+  }
 
   Object.assign(doctor, updates);
   await doctor.save();

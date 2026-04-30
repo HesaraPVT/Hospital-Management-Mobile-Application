@@ -6,3 +6,7 @@ export const createAppointmentApi = (data) => axios.post('/appointments', data);
 export const updateAppointmentApi = (id, data) => axios.put(`/appointments/${id}`, data);
 export const deleteAppointmentApi = (id) => axios.delete(`/appointments/${id}`);
 export const updateAppointmentStatusApi = (id, status) => axios.patch(`/appointments/${id}/status`, { status });
+export const cancelAppointmentApi = (appointmentId, cancellationReason) => 
+  axios.post(`/appointments/${appointmentId}/cancel`, { cancellationReason });
+export const getAvailableSlotsApi = (doctorId, appointmentDate, serviceId) => 
+  axios.get('/appointments/slots/available', { params: { doctorId, appointmentDate, serviceId } });
