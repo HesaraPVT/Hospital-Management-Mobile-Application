@@ -17,6 +17,8 @@ const DoctorFormScreen = ({ route, navigation }) => {
   const [experience, setExperience] = useState(doctor?.experience?.toString() || '');
   const [description, setDescription] = useState(doctor?.description || '');
   const [consultationFee, setConsultationFee] = useState(doctor?.consultationFee?.toString() || '');
+  const [qualifications, setQualifications] = useState(doctor?.qualifications || '');
+  const [department, setDepartment] = useState(doctor?.department || '');
   const [availabilityStartTime, setAvailabilityStartTime] = useState(doctor?.availabilityStartTime || '09:00');
   const [availabilityEndTime, setAvailabilityEndTime] = useState(doctor?.availabilityEndTime || '17:00');
   const [availabilityStatus, setAvailabilityStatus] = useState(
@@ -43,12 +45,14 @@ const DoctorFormScreen = ({ route, navigation }) => {
 
     setLoading(true);
     try {
-      const data = { 
-        name, 
-        specialization, 
-        experience: exp, 
-        description, 
-        consultationFee: consultationFee ? parseFloat(consultationFee) : undefined, 
+      const data = {
+        name,
+        specialization,
+        experience: exp,
+        description,
+        consultationFee: consultationFee ? parseFloat(consultationFee) : undefined,
+        qualifications,
+        department,
         availabilityStatus,
         availabilityStartTime,
         availabilityEndTime,
@@ -79,23 +83,25 @@ const DoctorFormScreen = ({ route, navigation }) => {
           <CustomInput label="Full Name" value={name} onChangeText={setName} placeholder="Dr. Full Name" />
           <CustomInput label="Specialization" value={specialization} onChangeText={setSpecialization} placeholder="e.g. Cardiologist" />
           <CustomInput label="Experience (yrs)" value={experience} onChangeText={setExperience} placeholder="e.g. 5" keyboardType="numeric" />
+          <CustomInput label="Qualifications" value={qualifications} onChangeText={setQualifications} placeholder="e.g. MBBS, MD" />
+          <CustomInput label="Department" value={department} onChangeText={setDepartment} placeholder="e.g. Cardiology" />
           <CustomInput label="Consultation Fee" value={consultationFee} onChangeText={setConsultationFee} placeholder="e.g. 2500" keyboardType="numeric" />
           <CustomInput label="Description" value={description} onChangeText={setDescription} placeholder="Brief bio..." multiline numberOfLines={4} />
         </View>
 
         <Text style={styles.sectionLabel}>AVAILABILITY</Text>
         <View style={styles.formCard}>
-          <CustomInput 
-            label="Available From (HH:MM)" 
-            value={availabilityStartTime} 
-            onChangeText={setAvailabilityStartTime} 
-            placeholder="e.g. 09:00" 
+          <CustomInput
+            label="Available From (HH:MM)"
+            value={availabilityStartTime}
+            onChangeText={setAvailabilityStartTime}
+            placeholder="e.g. 09:00"
           />
-          <CustomInput 
-            label="Available Until (HH:MM)" 
-            value={availabilityEndTime} 
-            onChangeText={setAvailabilityEndTime} 
-            placeholder="e.g. 17:00" 
+          <CustomInput
+            label="Available Until (HH:MM)"
+            value={availabilityEndTime}
+            onChangeText={setAvailabilityEndTime}
+            placeholder="e.g. 17:00"
           />
         </View>
 

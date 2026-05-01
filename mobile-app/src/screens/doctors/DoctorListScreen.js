@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useContext } from 'react';
 import { View, FlatList, StyleSheet, Alert, TouchableOpacity, Text } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { getDoctorsApi, updateDoctorApi } from '../../api/doctorApi';
+import { getDoctorsApi, updateDoctorApi, deleteDoctorApi } from '../../api/doctorApi';
 import DoctorCard from '../../components/DoctorCard';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
@@ -34,6 +34,31 @@ const DoctorListScreen = ({ navigation }) => {
       fetchDoctors();
     }, [fetchDoctors])
   );
+
+  const handleDelete = (doctor) => {
+    Alert.alert(
+      'Delete Doctor',
+      `Are you sure you want to remove ${doctor.name}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setActionLoadingId(doctor._id);
+              await deleteDoctorApi(doctor._id);
+              setDoctors((prev) => prev.filter((d) => d._id !== doctor._id));
+            } catch (error) {
+              Alert.alert('Error', error.response?.data?.message || 'Delete failed');
+            } finally {
+              setActionLoadingId(null);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   if (loading) return <LoadingSpinner message="Loading doctors..." />;
 
@@ -69,13 +94,22 @@ const DoctorListScreen = ({ navigation }) => {
             />
             {isAdmin ? (
               <View style={styles.adminRow}>
-                <TouchableOpacity
-                  style={styles.editLink}
-                  onPress={() => navigation.navigate('DoctorForm', { doctor: item })}
-                  disabled={actionLoadingId !== null}
-                >
-                  <Text style={styles.editLinkText}>Edit profile</Text>
-                </TouchableOpacity>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+                  <TouchableOpacity
+                    style={styles.editLink}
+                    onPress={() => navigation.navigate('DoctorForm', { doctor: item })}
+                    disabled={actionLoadingId !== null}
+                  >
+                    <Text style={styles.editLinkText}>Edit</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.editLink}
+                    onPress={() => handleDelete(item)}
+                    disabled={actionLoadingId !== null}
+                  >
+                    <Text style={[styles.editLinkText, { color: COLORS.danger }]}>Delete</Text>
+                  </TouchableOpacity>
+                </View>
                 <TouchableOpacity
                   style={[
                     styles.togglePill,
