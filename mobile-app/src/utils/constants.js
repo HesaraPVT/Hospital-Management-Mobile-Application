@@ -1,1 +1,1 @@
-export const BASE_URL = 'http://172.20.10.12:5000/api'; // Change to deployed URL when needed
+export const BASE_URL = 'http://10.102.226.168:5000/api';

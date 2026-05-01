@@ -2,7 +2,7 @@ const Doctor = require('../models/doctor.model');
 const asyncHandler = require('../utils/asyncHandler');
 
 exports.createDoctor = asyncHandler(async (req, res) => {
-  const { name, specialization, experience, description, consultationFee, image, availabilityStatus, availabilityStartTime, availabilityEndTime } = req.body;
+  const { name, specialization, experience, description, consultationFee, qualifications, department, image, availabilityStatus, availabilityStartTime, availabilityEndTime } = req.body;
 
   if (!name || !specialization || experience === undefined) {
     return res.status(400).json({ message: 'Name, specialization, and experience are required' });
@@ -23,6 +23,8 @@ exports.createDoctor = asyncHandler(async (req, res) => {
     experience,
     description,
     consultationFee,
+    qualifications,
+    department,
     image,
     availabilityStatus: availabilityStatus !== undefined ? availabilityStatus : true,
     availabilityStartTime: availabilityStartTime || '09:00',
@@ -57,9 +59,11 @@ exports.updateDoctor = asyncHandler(async (req, res) => {
   if (req.body.experience !== undefined) updates.experience = req.body.experience;
   if (req.body.description !== undefined) updates.description = req.body.description;
   if (req.body.consultationFee !== undefined) updates.consultationFee = req.body.consultationFee;
+  if (req.body.qualifications !== undefined) updates.qualifications = req.body.qualifications;
+  if (req.body.department !== undefined) updates.department = req.body.department;
   if (req.body.image !== undefined) updates.image = req.body.image;
   if (req.body.availabilityStatus !== undefined) updates.availabilityStatus = req.body.availabilityStatus;
-  
+
   // Handle availability time updates
   if (req.body.availabilityStartTime !== undefined) {
     const timeRegex = /^\d{2}:\d{2}$/;
@@ -88,6 +92,6 @@ exports.deleteDoctor = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: 'Doctor not found' });
   }
 
-  await doctor.remove();
+  await doctor.deleteOne();
   res.status(200).json({ message: 'Doctor deleted successfully' });
 });
