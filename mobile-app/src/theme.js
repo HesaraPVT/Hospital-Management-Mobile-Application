@@ -25,12 +25,15 @@ export const COLORS = {
   danger: '#EF4444',
   dangerBg: '#FEE2E2',
   warning: '#F59E0B',
+  warningBg: '#FEF3C7',
 
   // UI elements
   inputBg: '#FFFFFF',
   inputBorder: '#E2E8F0',
   inputFocus: '#0D7F6F',
   divider: '#E2E8F0',
+  borderLight: '#E2E8F0',
+  bgOverlay: '#F1F5F9',
   link: '#0D7F6F',
   security: '#64748B',
 };
@@ -39,6 +42,7 @@ export const FONTS = {
   regular: '400',
   medium: '500',
   semibold: '600',
+  semiBold: '600',
   bold: '700',
 };
 
@@ -75,9 +79,17 @@ export const statusColor = (status) => {
   switch (status?.toLowerCase()) {
     case 'confirmed':
     case 'completed':
+    case 'resolved':
       return { text: COLORS.success, bg: COLORS.successBg };
     case 'pending':
+    case 'submitted':
       return { text: COLORS.warning, bg: '#FEF3C7' };
+    case 'under_review':
+      return { text: '#7C3AED', bg: '#EDE9FE' };
+    case 'in_progress':
+      return { text: '#2563EB', bg: '#DBEAFE' };
+    case 'closed':
+      return { text: COLORS.textSecondary, bg: COLORS.bgMuted };
     case 'cancelled':
     case 'rejected':
       return { text: COLORS.danger, bg: COLORS.dangerBg };
