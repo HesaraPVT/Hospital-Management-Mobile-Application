@@ -17,7 +17,7 @@ const DoctorDetailsScreen = ({ route, navigation }) => {
           </View>
           <View style={styles.infoBlock}>
             <Text style={styles.infoLabel}>Consultation Fee</Text>
-            <Text style={styles.infoValue}>${doctor?.consultationFee ?? 'N/A'}</Text>
+            <Text style={styles.infoValue}>Rs {doctor?.consultationFee ?? 'N/A'}</Text>
           </View>
         </View>
         <View style={[styles.badge, { backgroundColor: doctor?.availabilityStatus ? '#dcfce7' : '#fee2e2' }]}>
