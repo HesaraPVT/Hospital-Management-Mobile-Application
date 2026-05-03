@@ -6,11 +6,16 @@ console.log('📡 [AXIOS] Initializing with BASE_URL:', BASE_URL);
 
 const instance = axios.create({
   baseURL: BASE_URL,
+  timeout: 30000, // 30s — covers Render free-tier cold-start delay
   headers: {
     Accept: 'application/json',
     'Content-Type': 'application/json',
   },
 });
+
+// Call this on app start to wake up the Render server before the user loads data
+export const pingServer = () =>
+  instance.get('/health').catch(() => { }); // silently ignore — just warming up
 
 instance.interceptors.request.use(
   async (config) => {
