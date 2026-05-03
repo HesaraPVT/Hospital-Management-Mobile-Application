@@ -13,7 +13,7 @@ const titleFor = (reportType) => {
 };
 
 exports.generateReport = asyncHandler(async (req, res) => {
-  const { reportType } = req.body;
+  const { reportType, title, description } = req.body;
 
   if (!reportType) {
     return res.status(400).json({ message: 'reportType is required' });
@@ -24,7 +24,8 @@ exports.generateReport = asyncHandler(async (req, res) => {
   const report = await Report.create({
     generatedBy: req.user._id,
     reportType,
-    title: titleFor(reportType),
+    title: title?.trim() || titleFor(reportType),
+    description: description?.trim() || '',
     data,
   });
 
@@ -32,7 +33,9 @@ exports.generateReport = asyncHandler(async (req, res) => {
 });
 
 exports.getReports = asyncHandler(async (req, res) => {
-  const reports = await Report.find({})
+  const query = req.user.role === 'admin' ? {} : { generatedBy: req.user._id };
+
+  const reports = await Report.find(query)
     .sort({ createdAt: -1 })
     .populate('generatedBy', '-password');
   res.status(200).json(reports);
@@ -41,12 +44,42 @@ exports.getReports = asyncHandler(async (req, res) => {
 exports.getReportById = asyncHandler(async (req, res) => {
   const report = await Report.findById(req.params.id).populate('generatedBy', '-password');
   if (!report) return res.status(404).json({ message: 'Report not found' });
+
+  const isOwner = report.generatedBy?._id?.toString() === req.user._id.toString();
+  if (req.user.role !== 'admin' && !isOwner) {
+    return res.status(403).json({ message: 'Forbidden: insufficient permissions' });
+  }
+
   res.status(200).json(report);
+});
+
+exports.updateReport = asyncHandler(async (req, res) => {
+  const report = await Report.findById(req.params.id);
+  if (!report) return res.status(404).json({ message: 'Report not found' });
+
+  const isOwner = report.generatedBy.toString() === req.user._id.toString();
+  if (req.user.role !== 'admin' && !isOwner) {
+    return res.status(403).json({ message: 'Forbidden: insufficient permissions' });
+  }
+
+  const { title, description } = req.body;
+
+  if (title?.trim()) report.title = title.trim();
+  if (description !== undefined) report.description = typeof description === 'string' ? description.trim() : description;
+
+  await report.save();
+
+  const updated = await Report.findById(report._id).populate('generatedBy', '-password');
+  res.status(200).json(updated);
 });
 
 exports.deleteReport = asyncHandler(async (req, res) => {
   const report = await Report.findById(req.params.id);
   if (!report) return res.status(404).json({ message: 'Report not found' });
+
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Forbidden: admin access required' });
+  }
 
   await report.deleteOne();
   res.status(200).json({ message: 'Report deleted successfully' });

@@ -22,6 +22,7 @@ const ReportCard = ({ report, onPress }) => {
       <View style={styles.info}>
         <Text style={styles.title}>{report.title || 'Report'}</Text>
         <Text style={styles.type}>{report.reportType?.replace('_', ' ')}</Text>
+        {report.description ? <Text style={styles.description} numberOfLines={2}>{report.description}</Text> : null}
       </View>
       <View style={styles.arrow}>
         <View style={styles.chevron} />
@@ -65,6 +66,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.textMuted,
     textTransform: 'capitalize',
+  },
+  description: {
+    fontSize: 11,
+    color: COLORS.textMuted,
+    marginTop: 4,
+    lineHeight: 16,
   },
   arrow: { paddingLeft: 8 },
   chevron: {

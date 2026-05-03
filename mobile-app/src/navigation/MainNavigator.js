@@ -27,9 +27,15 @@ import ComplaintListScreen     from '../screens/complaints/ComplaintListScreen';
 import ComplaintFormScreen     from '../screens/complaints/ComplaintFormScreen';
 import ReportListScreen        from '../screens/reports/ReportListScreen';
 import ReportGenerateScreen    from '../screens/reports/ReportGenerateScreen';
+import ReportDetailScreen      from '../screens/reports/ReportDetailScreen';
 import ProfileScreen           from '../screens/common/ProfileScreen';
 import NotificationsScreen     from '../screens/common/NotificationsScreen';
 import AdminDashboardScreen    from '../screens/admin/AdminDashboardScreen';
+import PatientSearchScreen     from '../screens/admin/PatientSearchScreen';
+import PatientConfirmationScreen from '../screens/admin/PatientConfirmationScreen';
+import ReportUploadScreen      from '../screens/admin/ReportUploadScreen';
+import MyReportsScreen         from '../screens/common/MyReportsScreen';
+import MyReportDetailScreen    from '../screens/common/MyReportDetailScreen';
 import { AuthContext }         from '../context/AuthContext';
 
 // ── Design tokens (mirrors your theme) ───────────────────────────────────────
@@ -401,7 +407,7 @@ function Tabs() {
       <Tab.Screen name="Services"     component={ServiceListScreen} />
       <Tab.Screen name="Payments"     component={PaymentListScreen} />
       <Tab.Screen name="Complaints"   component={ComplaintListScreen} />
-      {isAdmin ? <Tab.Screen name="Reports" component={ReportListScreen} /> : null}
+      <Tab.Screen name="Reports" component={ReportListScreen} />
       {isAdmin ? <Tab.Screen name="Admin"   component={AdminDashboardScreen} /> : null}
       <Tab.Screen name="Profile"      component={ProfileScreen} />
     </Tab.Navigator>
@@ -421,6 +427,12 @@ export default function MainNavigator() {
       <Stack.Screen name="PaymentForm"         component={PaymentFormScreen} />
       <Stack.Screen name="ComplaintForm"       component={ComplaintFormScreen} />
       <Stack.Screen name="ReportGenerate"      component={ReportGenerateScreen} />
+      <Stack.Screen name="ReportDetail"        component={ReportDetailScreen} />
+      <Stack.Screen name="PatientSearch"       component={PatientSearchScreen} />
+      <Stack.Screen name="PatientConfirmation" component={PatientConfirmationScreen} />
+      <Stack.Screen name="ReportUpload"        component={ReportUploadScreen} />
+      <Stack.Screen name="MyReports"           component={MyReportsScreen} />
+      <Stack.Screen name="MyReportDetail"      component={MyReportDetailScreen} />
       <Stack.Screen name="Notifications"       component={NotificationsScreen} />
     </Stack.Navigator>
   );

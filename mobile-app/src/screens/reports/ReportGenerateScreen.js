@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Alert, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Alert, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import { generateReportApi } from '../../api/reportApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ScreenHeader from '../../components/ScreenHeader';
@@ -13,15 +13,17 @@ const REPORT_TYPES = [
 
 const ReportGenerateScreen = ({ navigation }) => {
   const [selected, setSelected] = useState(null);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleGenerate = async () => {
     if (!selected) { Alert.alert('Select a report type', 'Please select one of the report types below.'); return; }
     setLoading(true);
     try {
-      await generateReportApi({ reportType: selected });
+      const res = await generateReportApi({ reportType: selected, title, description });
       Alert.alert('Report Generated', 'Your report has been successfully created.', [
-        { text: 'OK', onPress: () => navigation.goBack() },
+        { text: 'OK', onPress: () => navigation.replace('ReportDetail', { reportId: res.data._id }) },
       ]);
     } catch (error) {
       Alert.alert('Failed', error.response?.data?.message || 'Report generation failed.');
@@ -58,6 +60,27 @@ const ReportGenerateScreen = ({ navigation }) => {
           </TouchableOpacity>
         ))}
 
+        <Text style={[styles.sectionLabel, { marginTop: 18 }]}>REPORT INPUT</Text>
+        <View style={styles.inputBlock}>
+          <Text style={styles.inputLabel}>Title</Text>
+          <TextInput
+            value={title}
+            onChangeText={setTitle}
+            placeholder="Optional custom report title"
+            placeholderTextColor={COLORS.textMuted}
+            style={styles.input}
+          />
+          <Text style={[styles.inputLabel, { marginTop: 12 }]}>Description</Text>
+          <TextInput
+            value={description}
+            onChangeText={setDescription}
+            placeholder="Add a short note about this report"
+            placeholderTextColor={COLORS.textMuted}
+            style={[styles.input, styles.textArea]}
+            multiline
+          />
+        </View>
+
         <TouchableOpacity
           style={[styles.generateBtn, !selected && styles.generateBtnDisabled]}
           onPress={handleGenerate}
@@ -76,6 +99,25 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   scrollContent: { padding: 16, paddingTop: 20, paddingBottom: 40 },
   sectionLabel: { fontSize: 10, fontWeight: FONTS.bold, color: COLORS.tealBright, letterSpacing: 2, marginBottom: 12, marginLeft: 4 },
+  inputBlock: {
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.lg,
+    padding: 14,
+    marginTop: 4,
+    marginBottom: 10,
+    ...SHADOW.card,
+  },
+  inputLabel: { fontSize: 12, fontWeight: FONTS.semibold, color: COLORS.navyDeep, marginBottom: 8 },
+  input: {
+    borderWidth: 1,
+    borderColor: COLORS.divider,
+    borderRadius: RADIUS.md,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    color: COLORS.navyDeep,
+    backgroundColor: COLORS.bgPage,
+  },
+  textArea: { minHeight: 92, textAlignVertical: 'top' },
 
   reportCard: {
     flexDirection: 'row', alignItems: 'center', gap: 14,

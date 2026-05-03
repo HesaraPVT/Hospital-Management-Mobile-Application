@@ -5,6 +5,7 @@ import { COLORS, FONTS, RADIUS, SHADOW } from '../../theme';
 const ADMIN_CARDS = [
   { key: 'DoctorForm', label: 'Add Doctor', sub: 'Register new specialist', color: COLORS.tealFaint, accent: COLORS.tealBright },
   { key: 'ServiceForm', label: 'Add Service', sub: 'Create a new service', color: '#e6f7f0', accent: COLORS.success },
+  { key: 'PatientSearch', label: 'Upload Medical Report', sub: 'Search patient & upload scan', color: '#fef0f5', accent: '#e91e63' },
   { key: 'Reports', label: 'View Reports', sub: 'Browse all reports', color: '#fff7ed', accent: COLORS.warning },
   { key: 'ReportGenerate', label: 'Generate Report', sub: 'Create custom report', color: '#fef2f2', accent: COLORS.danger },
   { key: 'Appointments', label: 'Appointments', sub: 'Manage bookings', color: COLORS.tealFaint, accent: COLORS.tealStrong },
