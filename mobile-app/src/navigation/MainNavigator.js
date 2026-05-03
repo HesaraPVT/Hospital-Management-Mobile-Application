@@ -34,6 +34,7 @@ import AdminDashboardScreen    from '../screens/admin/AdminDashboardScreen';
 import PatientSearchScreen     from '../screens/admin/PatientSearchScreen';
 import PatientConfirmationScreen from '../screens/admin/PatientConfirmationScreen';
 import ReportUploadScreen      from '../screens/admin/ReportUploadScreen';
+import UserAccountsScreen      from '../screens/admin/UserAccountsScreen';
 import MyReportsScreen         from '../screens/common/MyReportsScreen';
 import MyReportDetailScreen    from '../screens/common/MyReportDetailScreen';
 import { AuthContext }         from '../context/AuthContext';
@@ -431,6 +432,7 @@ export default function MainNavigator() {
       <Stack.Screen name="PatientSearch"       component={PatientSearchScreen} />
       <Stack.Screen name="PatientConfirmation" component={PatientConfirmationScreen} />
       <Stack.Screen name="ReportUpload"        component={ReportUploadScreen} />
+      <Stack.Screen name="UserAccounts"        component={UserAccountsScreen} />
       <Stack.Screen name="MyReports"           component={MyReportsScreen} />
       <Stack.Screen name="MyReportDetail"      component={MyReportDetailScreen} />
       <Stack.Screen name="Notifications"       component={NotificationsScreen} />

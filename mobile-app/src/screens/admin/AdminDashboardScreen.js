@@ -1,5 +1,7 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, StatusBar, Platform } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, StatusBar, Platform, ActivityIndicator } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { getUsersApi } from '../../api/userApi';
 import { COLORS, FONTS, RADIUS, SHADOW } from '../../theme';
 
 const ADMIN_CARDS = [
@@ -29,30 +31,97 @@ const AdminCard = ({ item, onPress }) => (
   </TouchableOpacity>
 );
 
-const AdminDashboardScreen = ({ navigation }) => (
-  <View style={styles.root}>
-    <StatusBar barStyle="light-content" backgroundColor={COLORS.navyDeep} />
+const allowedRoles = new Set(['patient', 'doctor', 'admin']);
 
-    <View style={styles.hero}>
-      <View style={styles.circle1} /><View style={styles.circle2} />
-      <Text style={styles.heroEst}>OLYMPUS LANKA HOSPITAL</Text>
-      <Text style={styles.heroTitle}>Admin Dashboard</Text>
-      <View style={styles.accentBar} />
-      <Text style={styles.heroSub}>Manage hospital operations</Text>
+const AccountRow = ({ user }) => {
+  const createdAt = user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }) : 'Unknown';
+
+  return (
+    <View style={styles.accountRow}>
+      <View style={styles.accountAvatar}>
+        <Text style={styles.accountAvatarText}>{(user.name || user.email || '?').charAt(0).toUpperCase()}</Text>
+      </View>
+      <View style={styles.accountInfo}>
+        <Text style={styles.accountName} numberOfLines={1}>{user.name || 'Unnamed user'}</Text>
+        <Text style={styles.accountMeta} numberOfLines={1}>{user.email}</Text>
+        <Text style={styles.accountMeta}>{user.role} • Created {createdAt}</Text>
+      </View>
     </View>
+  );
+};
 
-    <ScrollView
-      style={styles.scroll}
-      contentContainerStyle={styles.scrollContent}
-      showsVerticalScrollIndicator={false}
-    >
-      <Text style={styles.sectionLabel}>QUICK ACTIONS</Text>
-      {ADMIN_CARDS.map((item) => (
-        <AdminCard key={item.key} item={item} onPress={() => navigation.navigate(item.key)} />
-      ))}
-    </ScrollView>
-  </View>
-);
+const AdminDashboardScreen = ({ navigation }) => {
+  const [users, setUsers] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(true);
+
+  const fetchUsers = useCallback(async () => {
+    setLoadingUsers(true);
+    try {
+      const res = await getUsersApi();
+      setUsers(res.data || []);
+    } catch (error) {
+      console.error('Failed to load users', error);
+      setUsers([]);
+    } finally {
+      setLoadingUsers(false);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchUsers();
+    }, [fetchUsers])
+  );
+
+  const visibleUsers = users.filter((user) => allowedRoles.has(user.role));
+  const totalAccounts = visibleUsers.length;
+  const roleBreakdown = visibleUsers.reduce((acc, user) => {
+    const role = user.role || 'unknown';
+    acc[role] = (acc[role] || 0) + 1;
+    return acc;
+  }, {});
+
+  return (
+    <View style={styles.root}>
+      <StatusBar barStyle="light-content" backgroundColor={COLORS.navyDeep} />
+
+      <View style={styles.hero}>
+        <View style={styles.circle1} /><View style={styles.circle2} />
+        <Text style={styles.heroEst}>OLYMPUS LANKA HOSPITAL</Text>
+        <Text style={styles.heroTitle}>Admin Dashboard</Text>
+        <View style={styles.accentBar} />
+        <Text style={styles.heroSub}>Manage hospital operations</Text>
+      </View>
+
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={styles.sectionLabel}>QUICK ACTIONS</Text>
+        <AdminCard
+          item={{
+            key: 'UserAccounts',
+            label: 'User Accounts',
+            sub: loadingUsers
+              ? 'Loading account summary...'
+              : `${totalAccounts} total accounts • ${roleBreakdown.patient || 0} patients • ${roleBreakdown.admin || 0} admins`,
+            color: COLORS.tealFaint,
+            accent: COLORS.tealBright,
+          }}
+          onPress={() => navigation.navigate('UserAccounts')}
+        />
+        {ADMIN_CARDS.map((item) => (
+          <AdminCard key={item.key} item={item} onPress={() => navigation.navigate(item.key)} />
+        ))}
+      </ScrollView>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: COLORS.bgPage },
@@ -74,7 +143,6 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   scrollContent: { padding: 16, paddingTop: 20 },
   sectionLabel: { fontSize: 10, fontWeight: FONTS.bold, color: COLORS.tealBright, letterSpacing: 2, marginBottom: 12, marginLeft: 4 },
-
   card: {
     flexDirection: 'row',
     alignItems: 'center',
