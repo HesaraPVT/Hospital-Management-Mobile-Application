@@ -1,7 +1,7 @@
+require('dotenv').config();
+
 const connectDB = require('./src/config/db');
 const app = require('./src/app');
-
-require('dotenv').config();
 
 const start = async () => {
   await connectDB();

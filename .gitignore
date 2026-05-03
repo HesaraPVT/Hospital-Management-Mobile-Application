@@ -31,7 +31,18 @@ build/
 # Logs
 logs/
 *.log
+debug.log
 
 # Mobile app uploads
 mobile-app/uploads/
 backend/uploads/
+
+# Generated files (development only)
+hospital-schema-diagram.html
+schemas.json
+test-connection.js
+visualizeSchemas.js
+
+# Package manager lock files for production
+package-lock.json
+yarn.lock

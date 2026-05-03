@@ -19,9 +19,23 @@ const AppointmentListScreen = ({ navigation }) => {
   const fetchAppointments = useCallback(async () => {
     setLoading(true);
     try {
+      console.log('📅 [APPOINTMENTS] Fetching appointments...');
       const res = await getAppointmentsApi();
+      console.log('📅 [APPOINTMENTS] Response received:', {
+        dataType: typeof res.data,
+        isArray: Array.isArray(res.data),
+        length: Array.isArray(res.data) ? res.data.length : 'N/A',
+        sample: Array.isArray(res.data) ? res.data[0] : res.data,
+      });
       setAppointments(res.data);
-    } catch (e) { console.error(e); }
+      console.log('✅ [APPOINTMENTS] Appointments set:', res.data);
+    } catch (e) {
+      console.error('❌ [APPOINTMENTS] Error fetching appointments:', {
+        message: e.message,
+        status: e.response?.status,
+        error: e.response?.data?.message,
+      });
+    }
     finally { setLoading(false); }
   }, []);
 

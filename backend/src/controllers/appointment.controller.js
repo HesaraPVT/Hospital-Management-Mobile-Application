@@ -148,11 +148,14 @@ exports.createAppointment = asyncHandler(async (req, res) => {
 });
 
 exports.getAppointments = asyncHandler(async (req, res) => {
+  console.log('📅 [APPOINTMENT] GET /appointments - User role:', req.user?.role, 'User ID:', req.user?._id);
   const filter = req.user.role === 'admin' ? {} : { userId: req.user._id };
+  console.log('📅 [APPOINTMENT] Filter:', JSON.stringify(filter));
   const appointments = await Appointment.find(filter)
     .populate('doctorId')
     .populate('serviceId')
     .populate('userId', '-password');
+  console.log(`📅 [APPOINTMENT] Found ${appointments.length} appointments`);
   res.status(200).json(appointments);
 });
 

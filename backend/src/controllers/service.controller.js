@@ -238,10 +238,13 @@ exports.createService = asyncHandler(async (req, res) => {
     // UPDATED: Destructure 'category' from the request body
     const { serviceName, description, price, duration, availabilityStatus, category } = req.body;
 
+    console.log('🔧 [SERVICE] POST /services - Creating service:', { serviceName, category });
+
     // UPDATED: Added 'category' to mandatory validation
-    const requiredFields = ['serviceName', 'description', 'price', 'duration', 'category'];
+    const requiredFields = ['serviceName', 'description', 'price', 'duration'];
     for (const field of requiredFields) {
         if (req.body[field] === undefined || req.body[field] === null) {
+            console.error(`❌ [SERVICE] Missing required field: ${field}`);
             return res.status(400).json({ 
                 success: false, 
                 message: `Please provide the following field: ${field}` 
@@ -254,18 +257,21 @@ exports.createService = asyncHandler(async (req, res) => {
         description,
         price,
         duration,
-        category, // UPDATED: Save the category to the database
+        category: category || 'General', // UPDATED: Use provided category or default to 'General'
         availabilityStatus: availabilityStatus ?? true, 
     });
 
+    console.log('✅ [SERVICE] Service created:', newService._id);
     res.status(201).json({ success: true, data: newService });
 });
 
 // @desc    Retrieve all services
 // @route   GET /api/services
 exports.getServices = asyncHandler(async (req, res) => {
+    console.log('🔧 [SERVICE] GET /services - Fetching all services...');
     const data = await Service.find().lean(); 
-    res.status(200).json({ success: true, count: data.length, data });
+    console.log(`🔧 [SERVICE] Found ${data.length} services`);
+    res.status(200).json(data);
 });
 
 // @desc    Get single service details
@@ -277,7 +283,7 @@ exports.getServiceById = asyncHandler(async (req, res) => {
         return res.status(404).json({ success: false, message: 'Resource not found' });
     }
     
-    res.status(200).json({ success: true, data: entry });
+    res.status(200).json(entry);
 });
 
 // @desc    Modify existing service info
@@ -293,7 +299,7 @@ exports.updateService = asyncHandler(async (req, res) => {
         return res.status(404).json({ success: false, message: 'Update failed: Service not found' });
     }
 
-    res.status(200).json({ success: true, data: updatedService });
+    res.status(200).json(updatedService);
 });
 
 // @desc    Remove service from system

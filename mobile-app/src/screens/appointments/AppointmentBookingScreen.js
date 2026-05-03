@@ -73,9 +73,20 @@ const AppointmentBookingScreen = ({ route, navigation }) => {
   useEffect(() => {
     (async () => {
       try {
+        console.log('🔧 [BOOKING] Fetching services...');
         const res = await getServicesApi();
-        setServices(Array.isArray(res.data) ? res.data : []);
-      } catch (e) { console.error(e); }
+        console.log('🔧 [BOOKING] Services response:', {
+          dataType: typeof res.data,
+          isArray: Array.isArray(res.data),
+          length: Array.isArray(res.data) ? res.data.length : 'N/A',
+          sample: Array.isArray(res.data) ? res.data[0]?.serviceName : 'N/A',
+        });
+        const servicesData = Array.isArray(res.data) ? res.data : [];
+        setServices(servicesData);
+        console.log('✅ [BOOKING] Services set:', servicesData.length, 'services');
+      } catch (e) {
+        console.error('❌ [BOOKING] Error fetching services:', e.message);
+      }
     })();
   }, []);
 

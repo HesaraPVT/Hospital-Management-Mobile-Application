@@ -40,7 +40,7 @@ const ProfileScreen = () => {
 
       <View style={styles.hero}>
         <View style={styles.circle1} /><View style={styles.circle2} />
-        <Text style={styles.heroEst}>OLYMPUS LANKA HOSPITAL</Text>
+        <Text style={styles.heroEst}>MEDILINK</Text>
         <Text style={styles.heroTitle}>My Profile</Text>
         <View style={styles.accentBar} />
         <View style={styles.avatarWrap}>

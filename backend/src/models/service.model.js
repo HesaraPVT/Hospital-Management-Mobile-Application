@@ -77,7 +77,6 @@ const HospitalServiceSchema = new mongoose.Schema(
         // ADDED: Category field with validation
         category: {
             type: String,
-            required: [true, 'Please select a service category'],
             enum: ['Laboratory', 'Radiology', 'Consultation', 'General', 'Emergency'],
             default: 'General'
         },
@@ -108,5 +107,5 @@ const HospitalServiceSchema = new mongoose.Schema(
 // Creating an index on serviceName to speed up searches
 HospitalServiceSchema.index({ serviceName: 'text' });
 
-// We use the third argument 'services' to ensure it saves to the correct collection in Atlas
-module.exports = mongoose.model('HealthcareService', HospitalServiceSchema, 'services');
+// We use 'Service' to match the controller import/reference
+module.exports = mongoose.model('Service', HospitalServiceSchema, 'services');

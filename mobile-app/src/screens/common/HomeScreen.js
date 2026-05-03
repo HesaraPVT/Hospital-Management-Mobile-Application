@@ -46,7 +46,7 @@ const HomeScreen = ({ navigation }) => {
           <View style={styles.crossV} /><View style={styles.crossH} />
         </View>
 
-        <Text style={styles.heroEst}>OLYMPUS LANKA HOSPITAL</Text>
+        <Text style={styles.heroEst}>MEDILINK</Text>
         <Text style={styles.heroGreet}>Good day,</Text>
         <Text style={styles.heroName}>{userInfo?.name} 👋</Text>
         <View style={styles.heroAccent} />

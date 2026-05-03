@@ -64,13 +64,6 @@ const ShieldIcon = ({ color = COLORS.security }) => (
   </View>
 );
 
-const MedicalCross = () => (
-  <View style={crossStyles.container} pointerEvents="none">
-    <View style={crossStyles.vertical} />
-    <View style={crossStyles.horizontal} />
-  </View>
-);
-
 // ─── Custom Input Field ───────────────────────────────────────────────────────
 const HospitalInput = ({
   label,
@@ -209,8 +202,6 @@ const LoginScreen = ({ navigation }) => {
       >
         {/* ── Header Panel ── */}
         <View style={styles.headerPanel}>
-          <MedicalCross />
-
           {/* Decorative circles */}
           <View style={styles.circleTopRight} />
           <View style={styles.circleBottomLeft} />
@@ -231,8 +222,8 @@ const LoginScreen = ({ navigation }) => {
               },
             ]}
           >
-            <Text style={styles.hospitalEst}>EST. 2005 · Tissamaharama, SRI LANKA</Text>
-            <Text style={styles.hospitalName}>Olympus Lanka{'\n'}Hospital</Text>
+            <Text style={styles.hospitalEst}>MediLink Healthcare Solutions</Text>
+            <Text style={styles.hospitalName}>MediLink</Text>
             <View style={styles.accentBar} />
             <Text style={styles.tagline}>
               Compassionate care, advanced medicine.{'\n'}Your health is our highest calling.
@@ -331,16 +322,6 @@ const LoginScreen = ({ navigation }) => {
               <TouchableOpacity onPress={() => navigation.navigate('Register')} activeOpacity={0.7}>
                 <Text style={styles.registerLink}>Register here</Text>
               </TouchableOpacity>
-            </View>
-
-            {/* Security badge */}
-            <View style={styles.securityBadge}>
-              <View style={styles.shieldWrap}>
-                <View style={styles.shieldOuter} />
-              </View>
-              <Text style={styles.securityText}>
-                Nadeesha D Shalom - SLIIT WMT 2026
-              </Text>
             </View>
           </Animated.View>
         </View>
@@ -501,37 +482,6 @@ const styles = StyleSheet.create({
     color: COLORS.link,
     fontWeight: '600',
   },
-
-  // Security
-  securityBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.divider,
-    gap: 8,
-  },
-  shieldWrap: {
-    width: 14,
-    height: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  shieldOuter: {
-    width: 12,
-    height: 13,
-    borderWidth: 1.5,
-    borderColor: COLORS.security,
-    borderRadius: 2,
-    borderBottomLeftRadius: 6,
-    borderBottomRightRadius: 6,
-  },
-  securityText: {
-    fontSize: 10,
-    color: COLORS.security,
-    letterSpacing: 0.3,
-  },
 });
 
 const inputStyles = StyleSheet.create({
@@ -611,34 +561,6 @@ const miniIconStyles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: COLORS.security,
     borderRadius: 2,
-  },
-});
-
-const crossStyles = StyleSheet.create({
-  container: {
-    position: 'absolute',
-    right: 24,
-    bottom: 20,
-    width: 80,
-    height: 80,
-    opacity: 0.1,
-    zIndex: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  vertical: {
-    position: 'absolute',
-    width: 22,
-    height: 70,
-    backgroundColor: COLORS.white,
-    borderRadius: 4,
-  },
-  horizontal: {
-    position: 'absolute',
-    width: 70,
-    height: 22,
-    backgroundColor: COLORS.white,
-    borderRadius: 4,
   },
 });
 

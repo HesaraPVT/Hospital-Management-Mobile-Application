@@ -58,7 +58,7 @@ const AppointmentDetailsScreen = ({ route, navigation }) => {
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} activeOpacity={0.8}>
           <View style={styles.backArrow} />
         </TouchableOpacity>
-        <Text style={styles.heroEst}>OLYMPUS LANKA HOSPITAL</Text>
+        <Text style={styles.heroEst}>MEDILINK</Text>
         <Text style={styles.heroTitle}>Appointment Details</Text>
         <View style={styles.accentBar} />
         <View style={[styles.statusBadge, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>

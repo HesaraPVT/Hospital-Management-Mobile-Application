@@ -54,7 +54,7 @@ const RegisterScreen = ({ navigation }) => {
         <View style={styles.crossWrap} pointerEvents="none">
           <View style={styles.crossV} /><View style={styles.crossH} />
         </View>
-        <Text style={styles.est}>OLYMPUS LANKA HOSPITAL</Text>
+        <Text style={styles.est}>MEDILINK</Text>
         <Text style={styles.headerTitle}>Create Account</Text>
         <View style={styles.accentBar} />
         <Text style={styles.headerSub}>Join our patient portal for seamless care</Text>
