@@ -4,7 +4,7 @@ import {
   TouchableOpacity, Platform, StatusBar,
 } from 'react-native';
 import { AuthContext } from '../../context/AuthContext';
-import { updateUserApi } from '../../api/userApi';
+import { updateUserApi, deleteUserApi } from '../../api/userApi';
 import CustomInput from '../../components/CustomInput';
 import CustomButton from '../../components/CustomButton';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -30,6 +30,32 @@ const ProfileScreen = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDeleteProfile = () => {
+    Alert.alert(
+      'Delete Profile',
+      'Are you sure you want to permanently delete your profile? This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            setLoading(true);
+            try {
+              await deleteUserApi(userInfo._id);
+              Alert.alert('Profile Deleted', 'Your profile has been deleted successfully.');
+              logout();
+            } catch (error) {
+              Alert.alert('Deletion Failed', error.response?.data?.message || 'Please try again.');
+            } finally {
+              setLoading(false);
+            }
+          },
+        },
+      ]
+    );
   };
 
   if (loading) return <LoadingSpinner message="Saving profile..." />;
@@ -69,6 +95,10 @@ const ProfileScreen = () => {
 
         <TouchableOpacity style={styles.logoutBtn} onPress={logout} activeOpacity={0.8}>
           <Text style={styles.logoutText}>Sign Out</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.deleteBtn} onPress={handleDeleteProfile} activeOpacity={0.8}>
+          <Text style={styles.deleteText}>Delete Profile</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -121,6 +151,11 @@ const styles = StyleSheet.create({
     borderWidth: 1.5, borderColor: COLORS.danger, alignItems: 'center', marginTop: 6,
   },
   logoutText: { fontSize: 14, fontWeight: FONTS.semibold, color: COLORS.danger },
+  deleteBtn: {
+    paddingVertical: 14, borderRadius: RADIUS.md,
+    backgroundColor: '#ff4444', alignItems: 'center', marginTop: 8,
+  },
+  deleteText: { fontSize: 14, fontWeight: FONTS.semibold, color: COLORS.white },
 });
 
 export default ProfileScreen;

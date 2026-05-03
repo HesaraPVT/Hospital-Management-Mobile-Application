@@ -47,7 +47,8 @@ exports.updateUser = asyncHandler(async (req, res) => {
 exports.deleteUser = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  if (req.user.role !== 'admin') {
+  // Allow users to delete their own profile OR admin to delete any user
+  if (req.user.role !== 'admin' && req.user._id.toString() !== id) {
     return res.status(403).json({ message: 'Forbidden' });
   }
 
@@ -56,6 +57,6 @@ exports.deleteUser = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: 'User not found' });
   }
 
-  await user.remove();
+  await User.deleteOne({ _id: id });
   res.status(200).json({ message: 'User deleted successfully' });
 });

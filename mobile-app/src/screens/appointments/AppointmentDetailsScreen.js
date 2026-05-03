@@ -21,7 +21,7 @@ const AppointmentDetailsScreen = ({ route, navigation }) => {
   const { userInfo } = useContext(AuthContext);
   const isPatient = userInfo?.role === 'patient';
   const sc = statusColor(appointment.status);
-  
+
   const [cancelModalVisible, setCancelModalVisible] = useState(false);
   const [cancellationReason, setCancellationReason] = useState('');
   const [cancelLoading, setCancelLoading] = useState(false);
@@ -76,6 +76,12 @@ const AppointmentDetailsScreen = ({ route, navigation }) => {
           <Text style={styles.cardTitle}>Booking Information</Text>
           <View style={styles.divider} />
           <DetailRow label="Patient" value={appointment.userId?.name || appointment.patientId?.name || 'Unknown'} />
+          {appointment.userId?.email ? (
+            <>
+              <View style={styles.divider} />
+              <DetailRow label="Email" value={appointment.userId.email} />
+            </>
+          ) : null}
           <View style={styles.divider} />
           <DetailRow label="Doctor" value={appointment.doctorId?.name || 'Unknown'} />
           <View style={styles.divider} />
@@ -83,7 +89,7 @@ const AppointmentDetailsScreen = ({ route, navigation }) => {
           {appointment.serviceId?.price !== undefined ? (
             <>
               <View style={styles.divider} />
-              <DetailRow label="Price" value={`$${appointment.serviceId.price}`} />
+              <DetailRow label="Price" value={`LKR ${appointment.serviceId.price.toLocaleString()}`} />
             </>
           ) : null}
           {appointment.serviceId?.duration ? (
@@ -134,10 +140,19 @@ const AppointmentDetailsScreen = ({ route, navigation }) => {
             <View>
               <Text style={styles.paymentBannerTitle}>Payment Required</Text>
               <Text style={styles.paymentBannerSub}>Your appointment has been approved</Text>
+              {appointment.serviceId?.price !== undefined ? (
+                <Text style={styles.paymentBannerAmount}>
+                  LKR {appointment.serviceId.price.toLocaleString()}
+                </Text>
+              ) : null}
             </View>
             <CustomButton
               title="Pay Now"
-              onPress={() => navigation.navigate('PaymentForm', { appointmentId: appointment._id })}
+              onPress={() => navigation.navigate('PaymentForm', {
+                appointmentId: appointment._id,
+                amount: appointment.serviceId?.price,
+                serviceName: appointment.serviceId?.serviceName,
+              })}
               style={styles.payBtn}
             />
           </View>
@@ -277,7 +292,8 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4, borderLeftColor: COLORS.tealStrong,
   },
   paymentBannerTitle: { fontSize: 15, fontWeight: FONTS.bold, color: COLORS.navyDeep },
-  paymentBannerSub: { fontSize: 12, fontWeight: FONTS.regular, color: COLORS.textMuted, marginTop: 2, marginBottom: 12 },
+  paymentBannerSub: { fontSize: 12, fontWeight: FONTS.regular, color: COLORS.textMuted, marginTop: 2 },
+  paymentBannerAmount: { fontSize: 20, fontWeight: FONTS.bold, color: COLORS.tealStrong, marginTop: 4, marginBottom: 12 },
   payBtn: { marginTop: 0, marginVertical: 0 },
 
   // Cancel button

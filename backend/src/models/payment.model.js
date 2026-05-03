@@ -8,6 +8,12 @@ const paymentSchema = new mongoose.Schema(
     paymentMethod: { type: String, enum: ['cash', 'card'], default: 'card' },
     status: { type: String, enum: ['pending', 'completed', 'failed'], default: 'pending' },
     transactionReference: { type: String },
+    // Stripe specific fields
+    stripePaymentIntentId: { type: String },
+    stripeClientSecret: { type: String },
+    stripePaymentMethodId: { type: String },
+    stripeChargeId: { type: String },
+    stripeStatus: { type: String, enum: ['requires_payment_method', 'requires_confirmation', 'requires_action', 'processing', 'requires_capture', 'canceled', 'succeeded'] },
   },
   { timestamps: true }
 );

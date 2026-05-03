@@ -2,8 +2,10 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { COLORS, FONTS, RADIUS, SHADOW, statusColor } from '../theme';
 
-const AppointmentCard = ({ appointment, onPress }) => {
+const AppointmentCard = ({ appointment, onPress, isAdmin }) => {
   const sc = statusColor(appointment.status);
+  const patientName = appointment.userId?.name || '';
+  const patientEmail = appointment.userId?.email || '';
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.88}>
@@ -22,6 +24,17 @@ const AppointmentCard = ({ appointment, onPress }) => {
 
         <Text style={styles.service}>{appointment.serviceId?.serviceName}</Text>
 
+        {/* Patient name + email (always visible when data exists) */}
+        {patientName ? (
+          <View style={styles.patientRow}>
+            <Text style={styles.patientIcon}>👤</Text>
+            <View style={styles.patientInfo}>
+              <Text style={styles.patientName}>{patientName}</Text>
+              {patientEmail ? <Text style={styles.patientEmail}>{patientEmail}</Text> : null}
+            </View>
+          </View>
+        ) : null}
+
         <View style={styles.metaRow}>
           <View style={styles.metaItem}>
             <Text style={styles.metaLabel}>Date</Text>
@@ -36,6 +49,17 @@ const AppointmentCard = ({ appointment, onPress }) => {
             <Text style={styles.metaLabel}>Time</Text>
             <Text style={styles.metaValue}>{appointment.appointmentTime}</Text>
           </View>
+          {appointment.serviceId?.price !== undefined ? (
+            <>
+              <View style={styles.metaDivider} />
+              <View style={styles.metaItem}>
+                <Text style={styles.metaLabel}>Price</Text>
+                <Text style={[styles.metaValue, styles.priceValue]}>
+                  LKR {appointment.serviceId.price.toLocaleString()}
+                </Text>
+              </View>
+            </>
+          ) : null}
         </View>
       </View>
     </TouchableOpacity>
@@ -113,6 +137,32 @@ const styles = StyleSheet.create({
     height: 28,
     backgroundColor: COLORS.divider,
     marginHorizontal: 12,
+  },
+  patientRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    backgroundColor: COLORS.tealFaint,
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+  },
+  patientIcon: { fontSize: 13, marginRight: 6 },
+  patientInfo: { flex: 1 },
+  patientName: {
+    fontSize: 12,
+    fontWeight: FONTS.bold,
+    color: COLORS.tealStrong,
+  },
+  patientEmail: {
+    fontSize: 11,
+    color: COLORS.tealStrong,
+    opacity: 0.8,
+    marginTop: 1,
+  },
+  priceValue: {
+    color: COLORS.tealStrong,
+    fontWeight: FONTS.bold,
   },
 });
 
