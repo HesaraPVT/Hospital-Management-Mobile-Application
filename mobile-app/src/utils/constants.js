@@ -1,1 +1,1 @@
-export const BASE_URL = 'http://192.168.56.1:5000/api';
+export const BASE_URL = 'https://hospital-management-backend-h54w.onrender.com/api';
