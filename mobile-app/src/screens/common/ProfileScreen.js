@@ -12,18 +12,51 @@ import { COLORS, FONTS, RADIUS, SHADOW } from '../../theme';
 
 const ProfileScreen = () => {
   const { userInfo, logout } = useContext(AuthContext);
-  const [name,    setName]    = useState(userInfo?.name    || '');
-  const [email,   setEmail]   = useState(userInfo?.email   || '');
-  const [phone,   setPhone]   = useState(userInfo?.phone   || '');
+  const [name, setName] = useState(userInfo?.name || '');
+  const [email, setEmail] = useState(userInfo?.email || '');
+  const [phone, setPhone] = useState(userInfo?.phone || '');
   const [address, setAddress] = useState(userInfo?.address || '');
+  const [dateOfBirth, setDateOfBirth] = useState(userInfo?.dateOfBirth || '');
+  const [age, setAge] = useState(userInfo?.age ? userInfo.age.toString() : '');
   const [loading, setLoading] = useState(false);
+
+  // Auto-calculate age whenever dateOfBirth changes
+  React.useEffect(() => {
+    // Basic date parsing expected in YYYY-MM-DD
+    if (dateOfBirth && dateOfBirth.length >= 4) {
+      const dob = new Date(dateOfBirth);
+      if (!isNaN(dob.getTime())) {
+        const today = new Date();
+        let calculatedAge = today.getFullYear() - dob.getFullYear();
+        const m = today.getMonth() - dob.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+          calculatedAge--;
+        }
+        setAge(calculatedAge >= 0 ? calculatedAge.toString() : '');
+      }
+    } else if (!dateOfBirth) {
+      setAge('');
+    }
+  }, [dateOfBirth]);
 
   const initials = name ? name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '?';
 
   const handleUpdate = async () => {
+    if (phone && !/^\d{10}$/.test(phone)) {
+      Alert.alert('Invalid Phone Number', 'Phone number must be exactly 10 digits.');
+      return;
+    }
+
     setLoading(true);
     try {
-      await updateUserApi(userInfo._id, { name, email, phone, address });
+      await updateUserApi(userInfo._id, {
+        name,
+        email,
+        phone,
+        address,
+        dateOfBirth,
+        age: age ? parseInt(age, 10) : undefined
+      });
       Alert.alert('Profile Updated', 'Your information has been saved successfully.');
     } catch (error) {
       Alert.alert('Update Failed', error.response?.data?.message || 'Please try again.');
@@ -85,10 +118,12 @@ const ProfileScreen = () => {
         <Text style={styles.sectionLabel}>ACCOUNT INFORMATION</Text>
 
         <View style={styles.formCard}>
-          <CustomInput label="Full Name"     value={name}    onChangeText={setName}    placeholder="Your name"    />
-          <CustomInput label="Email Address" value={email}   onChangeText={setEmail}   placeholder="Your email"   keyboardType="email-address" />
-          <CustomInput label="Phone Number"  value={phone}   onChangeText={setPhone}   placeholder="Your phone"   keyboardType="phone-pad" />
-          <CustomInput label="Address"       value={address} onChangeText={setAddress} placeholder="Your address" />
+          <CustomInput label="Full Name" value={name} onChangeText={setName} placeholder="Your name" />
+          <CustomInput label="Email Address" value={email} onChangeText={setEmail} placeholder="Your email" keyboardType="email-address" />
+          <CustomInput label="Phone Number" value={phone} onChangeText={setPhone} placeholder="Your 10-digit phone" keyboardType="phone-pad" helperText="Must be exactly 10 digits" />
+          <CustomInput label="Date of Birth" value={dateOfBirth} onChangeText={setDateOfBirth} placeholder="YYYY-MM-DD" helperText="Format: YYYY-MM-DD" />
+          <CustomInput label="Age" value={age} onChangeText={setAge} placeholder="Auto-calculated" keyboardType="numeric" style={{ opacity: 0.8 }} />
+          <CustomInput label="Address" value={address} onChangeText={setAddress} placeholder="Your address" />
         </View>
 
         <CustomButton title="Save Changes" onPress={handleUpdate} style={styles.saveBtn} />
@@ -117,10 +152,10 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   circle1: { position: 'absolute', width: 200, height: 200, borderRadius: 100, backgroundColor: 'rgba(255,255,255,0.04)', top: -50, right: -60 },
-  circle2: { position: 'absolute', width: 120, height: 120, borderRadius: 60,  backgroundColor: 'rgba(255,255,255,0.05)', bottom: -20, left: -30 },
-  heroEst:    { fontSize: 9, letterSpacing: 2.2, color: 'rgba(255,255,255,0.45)', marginBottom: 6 },
-  heroTitle:  { fontSize: 20, fontWeight: FONTS.bold, color: COLORS.white, marginBottom: 10 },
-  accentBar:  { width: 36, height: 3, backgroundColor: COLORS.tealLight, borderRadius: 2, marginBottom: 20 },
+  circle2: { position: 'absolute', width: 120, height: 120, borderRadius: 60, backgroundColor: 'rgba(255,255,255,0.05)', bottom: -20, left: -30 },
+  heroEst: { fontSize: 9, letterSpacing: 2.2, color: 'rgba(255,255,255,0.45)', marginBottom: 6 },
+  heroTitle: { fontSize: 20, fontWeight: FONTS.bold, color: COLORS.white, marginBottom: 10 },
+  accentBar: { width: 36, height: 3, backgroundColor: COLORS.tealLight, borderRadius: 2, marginBottom: 20 },
   avatarWrap: { alignItems: 'center', marginBottom: 10 },
   avatar: {
     width: 72, height: 72, borderRadius: 36,
@@ -133,19 +168,19 @@ const styles = StyleSheet.create({
     marginTop: 8, backgroundColor: 'rgba(255,255,255,0.15)',
     paddingHorizontal: 14, paddingVertical: 4, borderRadius: RADIUS.full,
   },
-  roleText:   { fontSize: 11, color: COLORS.white, fontWeight: FONTS.semibold, letterSpacing: 1, textTransform: 'uppercase' },
-  heroName:   { fontSize: 18, fontWeight: FONTS.bold,    color: COLORS.white, marginTop: 8 },
-  heroEmail:  { fontSize: 13, fontWeight: FONTS.regular, color: 'rgba(255,255,255,0.6)', marginTop: 2 },
+  roleText: { fontSize: 11, color: COLORS.white, fontWeight: FONTS.semibold, letterSpacing: 1, textTransform: 'uppercase' },
+  heroName: { fontSize: 18, fontWeight: FONTS.bold, color: COLORS.white, marginTop: 8 },
+  heroEmail: { fontSize: 13, fontWeight: FONTS.regular, color: 'rgba(255,255,255,0.6)', marginTop: 2 },
 
-  scroll:        { flex: 1 },
+  scroll: { flex: 1 },
   scrollContent: { padding: 16, paddingTop: 20, paddingBottom: 40 },
-  sectionLabel:  { fontSize: 10, fontWeight: FONTS.bold, color: COLORS.tealBright, letterSpacing: 2, marginBottom: 12, marginLeft: 4 },
+  sectionLabel: { fontSize: 10, fontWeight: FONTS.bold, color: COLORS.tealBright, letterSpacing: 2, marginBottom: 12, marginLeft: 4 },
 
   formCard: {
     backgroundColor: COLORS.white, borderRadius: RADIUS.lg,
     padding: 16, marginBottom: 16, ...SHADOW.card,
   },
-  saveBtn:    { marginBottom: 10 },
+  saveBtn: { marginBottom: 10 },
   logoutBtn: {
     paddingVertical: 14, borderRadius: RADIUS.md,
     borderWidth: 1.5, borderColor: COLORS.danger, alignItems: 'center', marginTop: 6,

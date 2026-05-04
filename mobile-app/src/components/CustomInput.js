@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, TextInput, StyleSheet, Animated } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Animated, TouchableOpacity } from 'react-native';
 import { COLORS, RADIUS, FONTS } from '../theme';
 
 const CustomInput = ({
@@ -12,8 +12,11 @@ const CustomInput = ({
   multiline,
   numberOfLines,
   style,
+  hasPasswordToggle, // new prop
+  helperText, // new prop for helper notes
 }) => {
   const [focused, setFocused] = useState(false);
+  const [isSecure, setIsSecure] = useState(secureTextEntry);
   const borderAnim = useRef(new Animated.Value(0)).current;
 
   const onFocus = () => {
@@ -33,14 +36,14 @@ const CustomInput = ({
   return (
     <View style={[styles.group, style]}>
       {label ? <Text style={styles.label}>{label}</Text> : null}
-      <Animated.View style={[styles.inputWrap, { borderColor }]}>
+      <Animated.View style={[styles.inputWrap, { borderColor }, hasPasswordToggle && styles.inputWrapPassword]}>
         <TextInput
-          style={[styles.input, multiline && styles.inputMulti]}
+          style={[styles.input, multiline && styles.inputMulti, hasPasswordToggle && styles.inputWithToggle]}
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
           placeholderTextColor={COLORS.textPlaceholder}
-          secureTextEntry={secureTextEntry}
+          secureTextEntry={isSecure}
           keyboardType={keyboardType}
           multiline={multiline}
           numberOfLines={numberOfLines}
@@ -48,7 +51,17 @@ const CustomInput = ({
           onFocus={onFocus}
           onBlur={onBlur}
         />
+        {hasPasswordToggle && (
+          <TouchableOpacity
+            style={styles.toggleBtn}
+            onPress={() => setIsSecure(!isSecure)}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.toggleText}>{isSecure ? '👁️' : '🚫'}</Text>
+          </TouchableOpacity>
+        )}
       </Animated.View>
+      {helperText ? <Text style={styles.helperText}>{helperText}</Text> : null}
     </View>
   );
 };
@@ -80,6 +93,28 @@ const styles = StyleSheet.create({
   inputMulti: {
     textAlignVertical: 'top',
     minHeight: 90,
+  },
+  inputWrapPassword: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  inputWithToggle: {
+    flex: 1,
+  },
+  toggleBtn: {
+    padding: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  toggleText: {
+    fontSize: 16,
+  },
+  helperText: {
+    fontSize: 11,
+    color: COLORS.textMuted,
+    marginTop: 4,
+    marginLeft: 4,
   },
 });
 

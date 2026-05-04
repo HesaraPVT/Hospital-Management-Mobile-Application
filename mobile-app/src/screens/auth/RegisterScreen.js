@@ -26,11 +26,24 @@ const RegisterScreen = ({ navigation }) => {
     ]).start();
   }, []);
 
+  const validateEmail = (e) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+  };
+
   const handleRegister = async () => {
     if (!name || !email || !password) {
       Alert.alert('Missing Fields', 'Please fill in all fields to continue.');
       return;
     }
+    if (!validateEmail(email)) {
+      Alert.alert('Invalid Email', 'Please enter a valid email address (e.g. user@example.com).');
+      return;
+    }
+    if (password.length < 6) {
+      Alert.alert('Weak Password', 'Password must be at least 6 characters long.');
+      return;
+    }
+
     setLoading(true);
     try {
       await register(name, email, password);
@@ -67,7 +80,15 @@ const RegisterScreen = ({ navigation }) => {
 
           <CustomInput label="Full Name" value={name} onChangeText={setName} placeholder="Dr. / Mr. / Ms. Full Name" />
           <CustomInput label="Email Address" value={email} onChangeText={setEmail} placeholder="you@example.com" keyboardType="email-address" />
-          <CustomInput label="Password" value={password} onChangeText={setPassword} placeholder="Create a strong password" secureTextEntry />
+          <CustomInput
+            label="Password"
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Create a strong password"
+            secureTextEntry
+            hasPasswordToggle
+            helperText="Password must be at least 6 characters"
+          />
 
           <CustomButton title="Create Account" onPress={handleRegister} style={styles.btn} />
 
